@@ -3,224 +3,268 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Broker Dashboard</title>
+<title>Broker Performance Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-/* ── RESET & TOKENS ─────────────────────────────────────── */
 :root{
-  --bg:#0f1117;--s1:#1a1d27;--s2:#22263a;
-  --bd:rgba(255,255,255,.08);
-  --ac:#f97316;--bl:#3b82f6;--gr:#22c55e;--rd:#ef4444;
-  --tx:#e2e8f0;--mt:#64748b;--r:12px;
+  --or:#f97316;--or2:#ea6c0a;--or-bg:#fff7f0;--or-light:#fff3e8;
+  --bg:#f5f5f5;--panel:#fff;--bd:#e8e8e8;--bd2:#d0d0d0;
+  --tx:#1a1a1a;--tx2:#555;--tx3:#999;
+  --gr:#16a34a;--gr-bg:#f0fdf4;
+  --rd:#dc2626;--rd-bg:#fef2f2;
+  --blue:#2563eb;--blue-bg:#eff6ff;
+  --mono:'JetBrains Mono',monospace;--sans:'Inter',system-ui,sans-serif;--r:10px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--tx);font-family:-apple-system,"Segoe UI",sans-serif;font-size:14px;min-height:100vh}
-a{color:inherit;text-decoration:none}
+body{background:var(--bg);color:var(--tx);font-family:var(--sans);font-size:14px;min-height:100vh}
 
-/* ── LOADING ─────────────────────────────────────────────── */
-#loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:16px;z-index:999}
-.spinner{width:36px;height:36px;border:3px solid var(--s2);border-top-color:var(--ac);
-  border-radius:50%;animation:spin .7s linear infinite}
+/* LOADING */
+#loading{position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;z-index:999}
+.spinner{width:36px;height:36px;border:3px solid #ffe8d6;border-top-color:var(--or);
+  border-radius:50%;animation:spin .65s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-#loading p{color:var(--mt);font-size:.85rem}
+#loading p{color:var(--tx3);font-size:.85rem}
 
-/* ── HEADER ──────────────────────────────────────────────── */
-.hdr{background:var(--s1);border-bottom:1px solid var(--bd);padding:16px 28px;
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
-.logo{display:flex;align-items:center;gap:10px}
-.logo-icon{width:32px;height:32px;background:var(--ac);border-radius:8px;
-  display:flex;align-items:center;justify-content:center;font-size:15px}
-.logo h1{font-size:1rem;font-weight:700}
-.hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.pbadge{background:var(--s2);border:1px solid var(--bd);padding:4px 13px;
-  border-radius:999px;font-size:.74rem;color:var(--mt)}
-.pbadge b{color:var(--tx)}
-.btn-refresh{background:none;border:1px solid var(--bd);color:var(--mt);
-  padding:4px 13px;border-radius:8px;cursor:pointer;font-size:.74rem}
-.btn-refresh:hover{color:var(--tx);border-color:var(--ac)}
+/* HEADER */
+.hdr{background:var(--panel);border-bottom:2px solid var(--or);padding:14px 32px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.hdr-left{display:flex;align-items:center;gap:14px}
+.logo{width:36px;height:36px;background:var(--or);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.hdr h1{font-size:1.05rem;font-weight:700}
 
-/* ── ERROR BANNER ────────────────────────────────────────── */
-.err-box{margin:20px 28px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);
-  border-radius:var(--r);padding:16px 20px;color:var(--rd);font-size:.85rem}
+/* CONTROLS */
+.controls{background:var(--panel);border-bottom:1px solid var(--bd);
+  padding:10px 32px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ctrl-label{font-size:.72rem;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap}
+.mode-toggle{display:flex;background:#f3f3f3;border:1px solid var(--bd);border-radius:7px;overflow:hidden}
+.mode-btn{padding:5px 14px;font-size:.78rem;color:var(--tx2);cursor:pointer;transition:all .12s;white-space:nowrap}
+.mode-btn.on{background:var(--or);color:#fff;font-weight:600}
+.divv{width:1px;height:20px;background:var(--bd);margin:0 4px}
+.sheet-tabs{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.stab{padding:5px 14px;font-size:.8rem;font-weight:500;color:var(--tx2);cursor:pointer;
+  border:1.5px solid var(--bd);border-radius:20px;transition:all .12s;white-space:nowrap;background:#fff}
+.stab:hover{border-color:var(--or);color:var(--or)}
+.stab.on{background:var(--or);border-color:var(--or);color:#fff;font-weight:600}
+.stab.cmp-a{background:var(--blue-bg);border-color:var(--blue);color:var(--blue);font-weight:600}
+.stab.cmp-b{background:#fff7ed;border-color:var(--or);color:var(--or2);font-weight:600}
+.cmp-arr{color:var(--tx3);font-size:.85rem;margin:0 2px}
 
-/* ── SUMMARY CARDS ───────────────────────────────────────── */
-.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;padding:20px 28px}
-.card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);
-  padding:16px 18px;position:relative;overflow:hidden}
-.card::after{content:"";position:absolute;top:0;left:0;right:0;height:2px}
-.card.or::after{background:var(--ac)}.card.bl::after{background:var(--bl)}.card.gr::after{background:var(--gr)}
-.card-lbl{font-size:.67rem;color:var(--mt);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
-.card-val{font-size:1.4rem;font-weight:700;letter-spacing:-.03em;line-height:1.1}
-.card-sub{font-size:.71rem;color:var(--mt);margin-top:4px}
-.gbadge{display:inline-flex;align-items:center;gap:3px;font-size:.69rem;font-weight:600;
-  padding:2px 7px;border-radius:999px;margin-top:5px}
-.up{background:rgba(34,197,94,.12);color:var(--gr)}
-.dn{background:rgba(239,68,68,.12);color:var(--rd)}
-.nu{background:var(--s2);color:var(--mt)}
+/* MODE LABEL */
+.mode-label{padding:8px 32px 0;display:none}
+.ml{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:5px;font-size:.75rem;font-weight:500}
+.ml.single{background:var(--or-bg);color:var(--or2)}
+.ml.compare{background:var(--blue-bg);color:var(--blue)}
 
-/* ── BAR CHART ───────────────────────────────────────────── */
-.chart-sec{padding:0 28px 12px}
-.sec-lbl{font-size:.67rem;color:var(--mt);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
-.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
-.bar-name{width:150px;text-align:right;font-size:.74rem;color:var(--mt);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
-.bar-track{flex:1;background:var(--s2);border-radius:4px;height:20px;overflow:hidden}
-.bar-fill{height:100%;background:var(--bl);border-radius:4px;
-  display:flex;align-items:center;padding-left:7px;min-width:36px;
-  transition:width .65s cubic-bezier(.4,0,.2,1)}
-.bar-fill.ac{background:var(--ac)}
-.bar-val{font-size:.69rem;color:#fff;font-weight:600;white-space:nowrap}
+/* ERR */
+.err{margin:14px 32px;background:var(--rd-bg);border-left:3px solid var(--rd);
+  border-radius:var(--r);padding:12px 16px;color:var(--rd);font-size:.82rem;line-height:1.6}
 
-/* ── TABLE ───────────────────────────────────────────────── */
-.tbl-sec{padding:14px 28px 28px}
-.tbl-hdr{display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:12px;flex-wrap:wrap;gap:8px}
-.sec-title{font-size:.9rem;font-weight:700}
-.search{background:var(--s1);border:1px solid var(--bd);border-radius:8px;
-  padding:6px 11px;color:var(--tx);font-size:.79rem;outline:none;width:200px}
-.search:focus{border-color:var(--ac)}.search::placeholder{color:var(--mt)}
-.tbl-wrap{border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
-table{width:100%;border-collapse:collapse}
-thead th{background:var(--s2);padding:9px 12px;text-align:left;
-  font-size:.65rem;color:var(--mt);text-transform:uppercase;letter-spacing:.07em;
-  font-weight:600;white-space:nowrap}
-tbody tr{border-top:1px solid var(--bd);cursor:pointer;transition:background .12s}
-tbody tr:hover{background:var(--s2)}
-tbody td{padding:10px 12px;font-size:.79rem;vertical-align:middle}
-.nr{text-align:right;font-variant-numeric:tabular-nums}
-.new-badge{display:inline-flex;align-items:center;justify-content:center;
-  background:rgba(249,115,22,.15);color:var(--ac);font-size:.67rem;font-weight:700;
-  border-radius:999px;min-width:20px;height:18px;padding:0 6px}
-.zero{color:var(--mt)}
+/* KPI STRIP */
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:0;background:var(--bd);border:1px solid var(--bd);margin:16px 32px;border-radius:var(--r);overflow:hidden}
+.kpi{background:var(--panel);padding:14px 20px;position:relative;border-right:1px solid var(--bd)}
+.kpi:last-child{border-right:none}
+.kpi::before{content:"";position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.k-or::before{background:var(--or)}.kpi.k-bl::before{background:var(--blue)}.kpi.k-gr::before{background:var(--gr)}
+.kpi-lbl{font-size:.67rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;font-weight:500}
+.kpi-val{font-family:var(--mono);font-size:1.3rem;font-weight:600;color:var(--tx);letter-spacing:-.02em;line-height:1.1}
+.kpi-sub{font-size:.7rem;color:var(--tx3);margin-top:3px}
+.kbadge{display:inline-flex;align-items:center;gap:2px;font-size:.68rem;font-weight:600;padding:2px 6px;border-radius:4px;margin-top:4px}
+.kbadge.up{background:var(--gr-bg);color:var(--gr)}.kbadge.dn{background:var(--rd-bg);color:var(--rd)}.kbadge.nu{background:#f3f3f3;color:var(--tx3)}
+
+/* CHARTS */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 32px 16px}
+.chart-card{background:var(--panel);border:1px solid var(--bd);border-radius:var(--r);padding:18px 20px}
+.chart-card.full{grid-column:1/-1}
+.chart-title{font-size:.82rem;font-weight:700;color:var(--tx);margin-bottom:3px;
+  display:flex;align-items:center;gap:7px}
+.chart-title::before{content:"";display:inline-block;width:3px;height:13px;background:var(--or);border-radius:2px}
+.chart-sub{font-size:.7rem;color:var(--tx3);margin-bottom:12px}
+.chart-legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--tx2)}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.no-prev{display:none;padding:40px 0;text-align:center;color:var(--tx3);font-size:.8rem}
+
+/* SECTION */
+.section{background:var(--panel);border:1px solid var(--bd);border-radius:var(--r);margin:0 32px 16px}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;
+  padding:13px 20px;border-bottom:1px solid var(--bd);flex-wrap:wrap;gap:8px}
+.sec-title{font-size:.85rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.sec-title span{font-size:.72rem;font-weight:400;color:var(--tx3)}
+.sec-body{padding:14px 20px}
+
+/* BAR */
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.bar-name{width:160px;text-align:right;font-size:.78rem;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.bar-track{flex:1;background:#f3f3f3;border-radius:3px;height:22px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:8px;min-width:40px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+.bar-fill.c0{background:var(--or)}.bar-fill.c1{background:#fb923c}.bar-fill.c2{background:#fdba74}.bar-fill.cx{background:#d1d5db}
+.bar-val{font-family:var(--mono);font-size:.68rem;color:#fff;font-weight:600;white-space:nowrap}
+
+/* TABLE */
+.search{background:#f8f8f8;border:1.5px solid var(--bd);border-radius:20px;
+  padding:5px 14px;color:var(--tx);font-size:.8rem;outline:none;width:200px}
+.search:focus{border-color:var(--or)}.search::placeholder{color:var(--tx3)}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:700px}
+thead th{background:#fafafa;padding:10px 12px;text-align:left;font-size:.7rem;color:var(--tx2);
+  font-weight:600;border-bottom:2px solid var(--bd);white-space:nowrap;cursor:pointer;user-select:none}
+thead th.nr{text-align:right}
+thead th.sorted{color:var(--or)}
+thead th:hover{color:var(--or)}
+.sort-arrow{margin-left:3px;opacity:.45;font-size:.62rem}
+.sorted .sort-arrow{opacity:1;color:var(--or)}
+tbody tr{border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .1s}
+tbody tr:hover{background:var(--or-bg)}
+tbody tr.total-row{background:var(--or-light);border-top:2px solid var(--or);cursor:default}
+tbody tr.total-row:hover{background:var(--or-light)}
+tbody td{padding:10px 12px;font-size:.8rem;vertical-align:middle}
+.nr{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
 .bfw{font-weight:600}
+.rank-circle{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0}
+.r1{background:var(--or);color:#fff}.r2{background:#fb923c;color:#fff}.r3{background:#fdba74;color:#fff}.rx{background:#e5e7eb;color:var(--tx2)}
+.acc-badge{display:inline-flex;align-items:center;padding:3px 10px;background:var(--or);color:#fff;border-radius:999px;font-size:.72rem;font-weight:600;white-space:nowrap}
+.acc-badge.zero{background:#e5e7eb;color:var(--tx3)}
+.acc-badge.new-acc{background:var(--gr);color:#fff}
+.gbadge{display:inline-flex;align-items:center;gap:2px;font-size:.7rem;font-weight:600;padding:2px 6px;border-radius:4px}
+.gbadge.up{background:var(--gr-bg);color:var(--gr)}.gbadge.dn{background:var(--rd-bg);color:var(--rd)}.gbadge.nu{background:#f3f3f3;color:var(--tx3)}
+.dash-cell{color:#ccc}
+.total-label{font-weight:700;color:var(--or);font-size:.82rem}
 
-/* ── MODAL ───────────────────────────────────────────────── */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);
-  z-index:200;align-items:flex-start;justify-content:center;
-  padding:32px 14px;overflow-y:auto}
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
 .overlay.open{display:flex}
-.modal{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);
-  width:100%;max-width:840px}
-.modal-hdr{display:flex;align-items:center;justify-content:space-between;
-  padding:14px 20px;border-bottom:1px solid var(--bd)}
-.modal-title{font-size:.9rem;font-weight:700}
-.close-btn{background:none;border:1px solid var(--bd);color:var(--mt);
-  width:26px;height:26px;border-radius:6px;cursor:pointer;font-size:.9rem;
-  display:flex;align-items:center;justify-content:center}
-.close-btn:hover{color:var(--tx)}
-.modal-body{padding:15px 20px}
-.tabs{display:flex;gap:6px;margin-bottom:13px}
-.tab{background:var(--s2);border:1px solid var(--bd);border-radius:7px;
-  padding:4px 12px;font-size:.73rem;color:var(--mt);cursor:pointer}
-.tab.on{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600}
+.modal{background:#fff;border-radius:var(--r);width:100%;max-width:900px;border:1px solid var(--bd);overflow:hidden}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--or-bg);border-bottom:2px solid var(--or)}
+.modal-title{font-size:.9rem;font-weight:700;color:var(--or2)}
+.xbtn{background:#fff;border:1.5px solid var(--bd);color:var(--tx3);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center}
+.xbtn:hover{border-color:var(--or);color:var(--or)}
+.modal-body{padding:16px 20px}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tab{background:#f3f3f3;border:1.5px solid var(--bd);border-radius:20px;padding:5px 14px;font-size:.78rem;color:var(--tx2);cursor:pointer;font-weight:500}
+.tab.on{background:var(--or);border-color:var(--or);color:#fff;font-weight:600}
 .pane{display:none;overflow-x:auto}.pane.on{display:block}
-.mini{width:100%;border-collapse:collapse;font-size:.76rem;min-width:460px}
-.mini th{background:var(--s2);padding:7px 9px;text-align:left;
-  font-size:.63rem;color:var(--mt);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
-.mini td{padding:8px 9px;border-top:1px solid var(--bd)}
-.empty{color:var(--mt);font-size:.78rem;padding:14px 0;text-align:center}
+.mini{width:100%;border-collapse:collapse;font-size:.79rem;min-width:520px}
+.mini th{background:#fafafa;padding:8px 10px;text-align:left;font-size:.67rem;color:var(--tx2);font-weight:600;border-bottom:1.5px solid var(--bd)}
+.mini th.nr{text-align:right}
+.mini td{padding:8px 10px;border-bottom:1px solid #f3f3f3}
+.empty-msg{color:var(--tx3);font-size:.82rem;padding:16px 0;text-align:center}
+.d-up{color:var(--gr);font-family:var(--mono);font-size:.77rem}
+.d-dn{color:var(--rd);font-family:var(--mono);font-size:.77rem}
+.d-nu{color:var(--tx3);font-family:var(--mono);font-size:.77rem}
 
-/* ── FOOTER ──────────────────────────────────────────────── */
-.footer{text-align:center;padding:12px;font-size:.67rem;
-  color:var(--mt);border-top:1px solid var(--bd)}
+/* FOOTER */
+.footer{text-align:center;padding:12px;font-size:.7rem;color:var(--tx3);background:var(--panel);
+  border:1px solid var(--bd);border-top:none;margin:0 32px 28px;border-radius:0 0 var(--r) var(--r)}
+.btn{background:#fff;border:1.5px solid var(--bd);color:var(--tx2);padding:5px 14px;border-radius:20px;cursor:pointer;font-size:.78rem;font-family:var(--sans)}
+.btn:hover{border-color:var(--or);color:var(--or)}
 
-@media(max-width:600px){
-  .hdr,.sum,.chart-sec,.tbl-sec{padding-left:13px;padding-right:13px}
-  .sum{grid-template-columns:1fr 1fr}
-  .bar-name{width:80px}
+@media(max-width:640px){
+  .hdr,.controls,.kpi-strip,.section,.footer,.mode-label,.err,.charts-grid{padding-left:14px;padding-right:14px;margin-left:0;margin-right:0;border-radius:0}
+  .kpi-strip,.section,.footer,.charts-grid{margin-left:10px;margin-right:10px}
+  .kpi-strip{grid-template-columns:1fr 1fr}.bar-name{width:90px}
+  .charts-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
+<div id="loading"><div class="spinner"></div><p>Đang tải dữ liệu...</p></div>
 
-<!-- LOADING -->
-<div id="loading">
-  <div class="spinner"></div>
-  <p>Đang tải dữ liệu...</p>
+<div id="app" style="display:none">
+<div class="hdr">
+  <div class="hdr-left">
+    <div class="logo">📊</div>
+    <h1>Broker Performance Dashboard</h1>
+  </div>
+  <button class="btn" onclick="loadData()">↻ Làm mới</button>
 </div>
 
-<!-- APP (ẩn cho đến khi load xong) -->
-<div id="app" style="display:none">
-
-  <!-- HEADER -->
-  <div class="hdr">
-    <div class="logo">
-      <div class="logo-icon">📊</div>
-      <h1>Broker Performance Dashboard</h1>
-    </div>
-    <div class="hdr-right">
-      <div class="pbadge">So sánh: <b id="prevName">—</b> → <b id="currName">—</b></div>
-      <button class="btn-refresh" onclick="loadData()">↻ Làm mới</button>
-    </div>
+<div class="controls">
+  <span class="ctrl-label">Chế độ</span>
+  <div class="mode-toggle">
+    <div class="mode-btn on" id="modeOne" onclick="setMode('single')">Xem tháng</div>
+    <div class="mode-btn"   id="modeCmp"  onclick="setMode('compare')">So sánh</div>
   </div>
+  <div class="divv"></div>
+  <span class="ctrl-label" id="tabsLabel">Tháng</span>
+  <div class="sheet-tabs" id="sheetTabs"></div>
+  <span class="cmp-arr" id="cmpArrow" style="display:none">→</span>
+  <div class="sheet-tabs" id="sheetTabsB" style="display:none"></div>
+</div>
 
-  <!-- ERROR -->
-  <div class="err-box" id="errBox" style="display:none"></div>
+<div class="mode-label" id="modeLabel"><div class="ml single" id="mlBadge">—</div></div>
+<div class="err" id="errBox" style="display:none"></div>
 
-  <!-- SUMMARY -->
-  <div class="sum">
-    <div class="card or">
-      <div class="card-lbl">Tài khoản mới</div>
-      <div class="card-val" id="sNew">—</div>
-      <div class="card-sub" id="sTotal">Tổng TK: —</div>
+<div class="kpi-strip">
+  <div class="kpi k-or"><div class="kpi-lbl">Tài khoản mới</div><div class="kpi-val" id="sNew">—</div><div class="kpi-sub" id="sTotal">—</div></div>
+  <div class="kpi k-bl"><div class="kpi-lbl">Tổng NAV</div><div class="kpi-val" id="sNAV">—</div><div id="sNAVg"></div></div>
+  <div class="kpi k-bl"><div class="kpi-lbl">Tổng AUM</div><div class="kpi-val" id="sAUM">—</div><div id="sAUMg"></div></div>
+  <div class="kpi k-gr"><div class="kpi-lbl">Tổng Fee</div><div class="kpi-val" id="sFee">—</div><div id="sFeeG"></div></div>
+</div>
+
+<!-- BAR CHART TOP -->
+<div class="section">
+  <div class="sec-hdr"><div class="sec-title">AUM theo broker <span>top 10</span></div></div>
+  <div class="sec-body" id="barChart"></div>
+</div>
+
+<!-- CHARTS GRID — chỉ hiện khi có tháng trước -->
+<div class="charts-grid" id="chartsGrid" style="display:none">
+  <div class="chart-card">
+    <div class="chart-title">AUM — So sánh 2 tháng</div>
+    <div class="chart-sub" id="c1sub">—</div>
+    <div class="chart-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div><span id="c1la">—</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div><span id="c1lb">—</span></div>
     </div>
-    <div class="card bl">
-      <div class="card-lbl">Tổng NAV</div>
-      <div class="card-val" id="sNAV">—</div>
-      <div id="sNAVg"></div>
-    </div>
-    <div class="card bl">
-      <div class="card-lbl">Tổng AUM</div>
-      <div class="card-val" id="sAUM">—</div>
-      <div id="sAUMg"></div>
-    </div>
-    <div class="card gr">
-      <div class="card-lbl">Tổng Fee</div>
-      <div class="card-val" id="sFee">—</div>
-      <div id="sFeeG"></div>
-    </div>
+    <div style="position:relative;height:220px"><canvas id="cAUM" role="img" aria-label="AUM so sánh 2 tháng"></canvas></div>
   </div>
-
-  <!-- CHART -->
-  <div class="chart-sec">
-    <div class="sec-lbl">AUM theo broker — top 10</div>
-    <div id="barChart"></div>
-  </div>
-
-  <!-- TABLE -->
-  <div class="tbl-sec">
-    <div class="tbl-hdr">
-      <div class="sec-title">Chi tiết theo broker</div>
-      <input class="search" id="searchBox" type="text" placeholder="Tìm broker...">
+  <div class="chart-card">
+    <div class="chart-title">NAV — So sánh 2 tháng</div>
+    <div class="chart-sub" id="c2sub">—</div>
+    <div class="chart-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div><span id="c2la">—</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div><span id="c2lb">—</span></div>
     </div>
-    <div class="tbl-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Broker / AE</th>
-            <th class="nr">TK mới</th>
-            <th class="nr">Tổng TK</th>
-            <th class="nr">NAV</th>
-            <th class="nr">AUM</th>
-            <th class="nr">Fee</th>
-            <th class="nr">Tăng trưởng fee</th>
-          </tr>
-        </thead>
-        <tbody id="tblBody"></tbody>
-      </table>
-    </div>
+    <div style="position:relative;height:220px"><canvas id="cNAV" role="img" aria-label="NAV so sánh 2 tháng"></canvas></div>
   </div>
+  <div class="chart-card">
+    <div class="chart-title">Trading Fee — So sánh 2 tháng</div>
+    <div class="chart-sub" id="c3sub">—</div>
+    <div class="chart-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div><span id="c3la">—</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div><span id="c3lb">—</span></div>
+    </div>
+    <div style="position:relative;height:220px"><canvas id="cFee" role="img" aria-label="Fee so sánh 2 tháng"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">TK mới vs Hiện hữu</div>
+    <div class="chart-sub" id="c4sub">—</div>
+    <div class="chart-legend" id="c4leg"></div>
+    <div style="position:relative;height:220px"><canvas id="cAcc" role="img" aria-label="TK mới vs hiện hữu"></canvas></div>
+  </div>
+</div>
 
-  <div class="footer" id="footer">—</div>
+<!-- TABLE -->
+<div class="section">
+  <div class="sec-hdr">
+    <div class="sec-title">Bảng Chi Tiết <span>(Click tiêu đề để sắp xếp)</span></div>
+    <input class="search" id="searchBox" type="text" placeholder="🔍 Tìm broker...">
+  </div>
+  <div class="tbl-wrap">
+    <table><thead id="tblHead"></thead><tbody id="tblBody"></tbody></table>
+  </div>
+</div>
+<div class="footer" id="footer">—</div>
 </div>
 
 <!-- MODAL -->
 <div class="overlay" id="overlay">
   <div class="modal">
-    <div class="modal-hdr">
-      <div class="modal-title" id="modalTitle">Chi tiết</div>
-      <button class="close-btn" id="closeBtn">✕</button>
-    </div>
+    <div class="modal-hdr"><div class="modal-title" id="modalTitle">Chi tiết</div><button class="xbtn" id="closeBtn">✕</button></div>
     <div class="modal-body">
       <div class="tabs">
         <div class="tab on" id="tab1">TK mới <span id="cnt1"></span></div>
@@ -233,198 +277,396 @@ tbody td{padding:10px 12px;font-size:.79rem;vertical-align:middle}
 </div>
 
 <script>
-// ============================================================
-//  ⚙️  CẤU HÌNH — chỉ sửa dòng này
-//  Dán URL Apps Script Web App của bạn vào đây
-// ============================================================
-var API_URL = "https://script.google.com/macros/s/AKfycbzu2bwTwy8x5OqFIFSIXlqjwpLDbz7d5EoVK-oRhzjdxb11wT1E4q7tcfzGq5UnV0IOmQ/exec";
-// ============================================================
+var API_URL="https://script.google.com/macros/s/AKfycbzu2bwTwy8x5OqFIFSIXlqjwpLDbz7d5EoVK-oRhzjdxb11wT1E4q7tcfzGq5UnV0IOmQ/exec";
+var RAW={},LABELS={},SHEETS=[],MODE="single",SEL_A="",SEL_B="",BROKERS=[],SORT_COL="tAUM",SORT_DIR=-1;
+var CI={};// chart instances
 
-var BROKERS = [];
-
-/* ── FORMAT ─────────────────────────────────────────────── */
-function fmt(n) {
-  if (!n || n === 0) return "0";
-  var a = Math.abs(n), s = n < 0 ? "-" : "";
-  if (a >= 1e12) return s + (a/1e12).toFixed(2) + " nghìn tỷ";
-  if (a >= 1e9)  return s + (a/1e9).toFixed(2)  + " tỷ";
-  if (a >= 1e6)  return s + (a/1e6).toFixed(1)  + " tr";
-  return s + a.toLocaleString("vi-VN");
+function fmt(n){
+  if(n===null||n===undefined||n===0)return null;
+  var a=Math.abs(n),s=n<0?"-":"";
+  if(a>=1e9)return s+(a/1e9).toFixed(2)+" tỷ";
+  if(a>=1e6)return s+(a/1e6).toFixed(1)+" tr";
+  if(a>=1e3)return s+(a/1e3).toFixed(0)+"k";
+  return s+a.toLocaleString("vi-VN");
 }
-function gbadge(v) {
-  if (v === null || v === undefined) return '<span class="gbadge nu">—</span>';
-  var c = v > 0 ? "up" : v < 0 ? "dn" : "nu";
-  var a = v > 0 ? "▲" : v < 0 ? "▼" : "=";
-  return '<span class="gbadge ' + c + '">' + a + " " + Math.abs(v).toFixed(1) + "%</span>";
+function fd(n){var v=fmt(n);return v||'<span class="dash-cell">—</span>';}
+function pct(v){
+  if(v===null||v===undefined)return'<span class="gbadge nu">—</span>';
+  var c=v>0?"up":v<0?"dn":"nu",a=v>0?"▲":v<0?"▼":"=";
+  return'<span class="gbadge '+c+'">'+a+" "+Math.abs(v).toFixed(1)+"%</span>";
 }
-function gdiff(v) {
-  if (v === null || v === undefined) return '<span style="color:var(--mt)">—</span>';
-  var c = v > 0 ? "var(--gr)" : v < 0 ? "var(--rd)" : "var(--mt)";
-  return '<span style="color:' + c + '">' + (v > 0 ? "+" : "") + fmt(v) + "</span>";
+function kb(v){
+  if(v===null||v===undefined)return'<span class="kbadge nu">—</span>';
+  var c=v>0?"up":v<0?"dn":"nu",a=v>0?"▲":v<0?"▼":"=";
+  return'<span class="kbadge '+c+'">'+a+" "+Math.abs(v).toFixed(1)+"%</span>";
+}
+function diff(v){
+  if(v===null||v===undefined)return'<span class="d-nu">—</span>';
+  var c=v>0?"d-up":v<0?"d-dn":"d-nu";
+  return'<span class="'+c+'">'+(v>0?"+":"")+fmt(v)+"</span>";
+}
+function lbl(s){
+  if(LABELS&&LABELS[s])return LABELS[s].replace("Thang","Tháng");
+  return"Tháng "+parseInt(s.replace(/\D/g,""),10);
 }
 
-/* ── LOAD DATA ───────────────────────────────────────────── */
-function loadData() {
-  document.getElementById("loading").style.display = "flex";
-  document.getElementById("app").style.display     = "none";
-  document.getElementById("errBox").style.display  = "none";
-
-  // Thêm timestamp để tránh cache
-  var url = API_URL + (API_URL.indexOf("?") >= 0 ? "&" : "?") + "t=" + Date.now();
-
-  fetch(url)
-    .then(function(r) {
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      return r.json();
+function loadData(){
+  document.getElementById("loading").style.display="flex";
+  document.getElementById("app").style.display="none";
+  document.getElementById("errBox").style.display="none";
+  fetch(API_URL+"?t="+Date.now())
+    .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json();})
+    .then(function(d){
+      document.getElementById("loading").style.display="none";
+      document.getElementById("app").style.display="block";
+      if(d.error){showErr(d.error);return;}
+      RAW=d.raw;SHEETS=d.sheets;LABELS=d.labels||{};
+      SEL_A=SHEETS[SHEETS.length-1];
+      SEL_B=SHEETS.length>=2?SHEETS[SHEETS.length-2]:"";
+      buildTabs();renderView();
     })
-    .then(function(data) {
-      document.getElementById("loading").style.display = "none";
-      document.getElementById("app").style.display     = "block";
-      if (data.error) {
-        showError(data.error); return;
-      }
-      render(data);
-    })
-    .catch(function(err) {
-      document.getElementById("loading").style.display = "none";
-      document.getElementById("app").style.display     = "block";
-      showError("Không lấy được dữ liệu: " + err.message
-        + "<br><br>Kiểm tra lại <b>API_URL</b> trong file index.html"
-        + " và đảm bảo Apps Script đã Deploy với quyền <b>Anyone</b>.");
+    .catch(function(e){
+      document.getElementById("loading").style.display="none";
+      document.getElementById("app").style.display="block";
+      showErr("Không lấy được dữ liệu: "+e.message
+        +"<br>→ Apps Script: <b>Deploy → Manage → Edit → Who has access: Anyone → New version → Deploy</b>");
     });
 }
+function showErr(m){var b=document.getElementById("errBox");b.innerHTML="⚠ "+m;b.style.display="block";}
 
-function showError(msg) {
-  var box = document.getElementById("errBox");
-  box.innerHTML = "⚠️ " + msg;
-  box.style.display = "block";
+function buildTabs(){
+  var cA=document.getElementById("sheetTabs"),cB=document.getElementById("sheetTabsB");
+  cA.innerHTML="";cB.innerHTML="";
+  SHEETS.forEach(function(s){
+    var a=document.createElement("div");
+    a.className="stab"+(MODE==="single"&&s===SEL_A?" on":MODE==="compare"&&s===SEL_A?" cmp-a":"");
+    a.textContent=lbl(s);a.title=s;
+    a.onclick=(function(n){return function(){SEL_A=n;buildTabs();renderView();};})(s);
+    cA.appendChild(a);
+    if(MODE==="compare"){
+      var b=document.createElement("div");
+      b.className="stab"+(s===SEL_B?" cmp-b":"");
+      b.textContent=lbl(s);b.title=s;
+      b.onclick=(function(n){return function(){SEL_B=n;buildTabs();renderView();};})(s);
+      cB.appendChild(b);
+    }
+  });
+  document.getElementById("cmpArrow").style.display=MODE==="compare"?"inline":"none";
+  document.getElementById("sheetTabsB").style.display=MODE==="compare"?"flex":"none";
+  document.getElementById("tabsLabel").textContent=MODE==="single"?"Tháng":"Kỳ A";
+  document.getElementById("modeOne").className="mode-btn"+(MODE==="single"?" on":"");
+  document.getElementById("modeCmp").className="mode-btn"+(MODE==="compare"?" on":"");
+}
+function setMode(m){
+  MODE=m;
+  if(m==="compare"&&!SEL_B&&SHEETS.length>=2)SEL_B=SHEETS[SHEETS.length-2];
+  buildTabs();renderView();
 }
 
-/* ── RENDER ──────────────────────────────────────────────── */
-function render(data) {
-  BROKERS = data.brokers;
-  var s   = data.summary;
-
-  // Header
-  document.getElementById("currName").textContent = data.currentName;
-  document.getElementById("prevName").textContent = data.prevName || "—";
-
-  // Cards
-  document.getElementById("sNew").textContent   = s.totalNew;
-  document.getElementById("sTotal").textContent = "Tổng TK: " + s.totalAccounts;
-  document.getElementById("sNAV").textContent   = fmt(s.companyNAV);
-  document.getElementById("sAUM").textContent   = fmt(s.companyAUM);
-  document.getElementById("sFee").textContent   = fmt(s.companyFee);
-  document.getElementById("sNAVg").innerHTML    = gbadge(s.growthNAV);
-  document.getElementById("sAUMg").innerHTML    = gbadge(s.growthAUM);
-  document.getElementById("sFeeG").innerHTML    = gbadge(s.growthFee);
-
-  // Footer
-  document.getElementById("footer").textContent =
-    "Dữ liệu: " + data.currentName + " so với " + (data.prevName||"—")
-    + " · Thêm sheet DB mới là tự cập nhật";
-
-  renderChart();
-  renderTable(BROKERS);
+function processRows(curRows,prevRows){
+  var pm={};(prevRows||[]).forEach(function(r){pm[r.account]=r;});
+  var bm={};
+  curRows.forEach(function(row){
+    var bk=row.broker||"Không rõ";
+    if(!bm[bk])bm[bk]={broker:bk,newAcc:[],existAcc:[],
+      tNAV:0,tAUM:0,tFee:0,tTrading:0,pNAV:0,pAUM:0,pFee:0};
+    var b=bm[bk];
+    b.tNAV+=row.nav;b.tAUM+=row.aum;b.tFee+=row.fee;b.tTrading+=row.trading;
+    if(row.isNew===true){
+      b.newAcc.push({name:row.name,account:row.account,nav:row.nav,aum:row.aum,fee:row.fee,trading:row.trading});
+    } else {
+      var prev=pm[row.account];
+      if(prev){
+        b.pNAV+=prev.nav;b.pAUM+=prev.aum;b.pFee+=prev.fee;
+        b.existAcc.push({name:row.name,account:row.account,nav:row.nav,aum:row.aum,fee:row.fee,trading:row.trading,prevNav:prev.nav,prevAum:prev.aum,prevFee:prev.fee});
+      } else {
+        b.existAcc.push({name:row.name,account:row.account,nav:row.nav,aum:row.aum,fee:row.fee,trading:row.trading});
+      }
+    }
+  });
+  var cN=0,cA=0,cF=0,cT=0,pN=0,pA=0,pF=0,nCnt=0;
+  var brokers=Object.keys(bm).map(function(k){
+    var b=bm[k];
+    cN+=b.tNAV;cA+=b.tAUM;cF+=b.tFee;cT+=b.tTrading;
+    pN+=b.pNAV;pA+=b.pAUM;pF+=b.pFee;nCnt+=b.newAcc.length;
+    return{broker:b.broker,newAcc:b.newAcc,existAcc:b.existAcc,
+      newCount:b.newAcc.length,totalCount:b.newAcc.length+b.existAcc.length,
+      tNAV:b.tNAV,tAUM:b.tAUM,tFee:b.tFee,tTrading:b.tTrading,
+      pNAV:b.pNAV,pAUM:b.pAUM,pFee:b.pFee,
+      gNAV:b.pNAV>0?((b.tNAV-b.pNAV)/b.pNAV*100):null,
+      gAUM:b.pAUM>0?((b.tAUM-b.pAUM)/b.pAUM*100):null,
+      gFee:b.pFee>0?((b.tFee-b.pFee)/b.pFee*100):null};
+  });
+  return{brokers:brokers,summary:{
+    totalNew:nCnt,totalAccounts:curRows.length,
+    cNAV:cN,cAUM:cA,cFee:cF,cTrading:cT,
+    gNAV:pN>0?((cN-pN)/pN*100):null,
+    gAUM:pA>0?((cA-pA)/pA*100):null,
+    gFee:pF>0?((cF-pF)/pF*100):null}};
 }
 
-function renderChart() {
-  var top = BROKERS.slice(0, 10);
-  var mx  = Math.max.apply(null, top.map(function(b){ return b.totalAUM; }));
-  if (mx <= 0) mx = 1;
-  document.getElementById("barChart").innerHTML = top.map(function(b, i) {
-    var p  = (b.totalAUM / mx * 100).toFixed(1);
-    var nm = b.broker.replace(/^(FA |LM2 |LM )/g,"").split(" ").slice(0,3).join(" ");
-    return '<div class="bar-row">'
-      + '<div class="bar-name" title="' + b.broker + '">' + nm + '</div>'
-      + '<div class="bar-track">'
-      + '<div class="bar-fill' + (i===0?' ac':'') + '" style="width:' + p + '%">'
-      + '<span class="bar-val">' + fmt(b.totalAUM) + '</span>'
-      + '</div></div></div>';
+function sortBrokers(list){
+  return list.slice().sort(function(a,b){
+    var va=a[SORT_COL]||0,vb=b[SORT_COL]||0;
+    if(SORT_COL==="broker")return SORT_DIR*(a.broker.localeCompare(b.broker));
+    return SORT_DIR*(vb-va);
+  });
+}
+function setSort(col){
+  if(SORT_COL===col)SORT_DIR*=-1;else{SORT_COL=col;SORT_DIR=-1;}
+  var hasPrev=MODE==="compare"&&!!SEL_B&&(RAW[SEL_B]||[]).length>0;
+  renderTable(BROKERS,hasPrev);
+}
+
+function renderView(){
+  var curRows=RAW[SEL_A]||[];
+  // Luôn lấy tháng liền trước để so sánh (kể cả mode single)
+  var prevSheet="";
+  if(MODE==="compare"&&SEL_B){
+    prevSheet=SEL_B;
+  } else {
+    // Tự động lấy sheet liền trước SEL_A
+    var idx=SHEETS.indexOf(SEL_A);
+    if(idx>0)prevSheet=SHEETS[idx-1];
+  }
+  var prevRows=prevSheet?RAW[prevSheet]||[]:[];
+  var hasPrev=prevRows.length>0;
+
+  var result=processRows(curRows,prevRows);
+  BROKERS=result.brokers;
+  var s=result.summary;
+
+  // Mode label
+  var ml=document.getElementById("modeLabel"),mlb=document.getElementById("mlBadge");
+  ml.style.display="flex";
+  if(MODE==="compare"&&prevSheet){
+    mlb.className="ml compare";
+    mlb.innerHTML="So sánh: <b>"+lbl(prevSheet)+"</b> → <b>"+lbl(SEL_A)+"</b>";
+  } else if(hasPrev){
+    mlb.className="ml single";
+    mlb.innerHTML="Đang xem: <b>"+lbl(SEL_A)+"</b> · so với <b>"+lbl(prevSheet)+"</b>";
+  } else {
+    mlb.className="ml single";
+    mlb.innerHTML="Đang xem: <b>"+lbl(SEL_A)+"</b>";
+  }
+
+  // KPIs
+  document.getElementById("sNew").textContent=s.totalNew;
+  document.getElementById("sTotal").textContent="Tổng TK hoạt động: "+s.totalAccounts;
+  document.getElementById("sNAV").textContent=fmt(s.cNAV)||"0";
+  document.getElementById("sAUM").textContent=fmt(s.cAUM)||"0";
+  document.getElementById("sFee").textContent=fmt(s.cFee)||"0";
+  document.getElementById("sNAVg").innerHTML=hasPrev?kb(s.gNAV):"";
+  document.getElementById("sAUMg").innerHTML=hasPrev?kb(s.gAUM):"";
+  document.getElementById("sFeeG").innerHTML=hasPrev?kb(s.gFee):"";
+
+  document.getElementById("footer").textContent=hasPrev
+    ?"SO SÁNH: "+lbl(prevSheet)+" → "+lbl(SEL_A)+" · "+curRows.length+" tài khoản · Thêm sheet DB mới tự cập nhật"
+    :"ĐANG XEM: "+lbl(SEL_A)+" · "+curRows.length+" tài khoản · Thêm sheet DB mới tự cập nhật";
+
+  renderBarChart();
+  renderTable(BROKERS,hasPrev);
+  renderCharts(BROKERS,hasPrev,curRows,prevRows,SEL_A,prevSheet);
+}
+
+function renderBarChart(){
+  var top=BROKERS.slice().sort(function(a,b){return b.tAUM-a.tAUM;}).slice(0,10);
+  var mx=Math.max.apply(null,top.map(function(b){return b.tAUM;}));if(mx<=0)mx=1;
+  document.getElementById("barChart").innerHTML=top.map(function(b,i){
+    var p=(b.tAUM/mx*100).toFixed(1);
+    var nm=b.broker.replace(/^(FA |LM2 |LM )/g,"").split(" ").slice(0,3).join(" ");
+    var cls=i===0?"c0":i===1?"c1":i===2?"c2":"cx";
+    return'<div class="bar-row"><div class="bar-name" title="'+b.broker+'">'+nm+'</div>'
+      +'<div class="bar-track"><div class="bar-fill '+cls+'" style="width:'+p+'%">'
+      +'<span class="bar-val">'+(fmt(b.tAUM)||"0")+'</span></div></div></div>';
   }).join("");
 }
 
-function renderTable(list) {
-  document.getElementById("tblBody").innerHTML = list.map(function(b) {
-    var idx = BROKERS.indexOf(b);
-    return '<tr onclick="openModal(' + idx + ')">'
-      + '<td class="bfw">' + b.broker + '</td>'
-      + '<td class="nr">'
-      +   (b.newCount > 0 ? '<span class="new-badge">+' + b.newCount + '</span>'
-                          : '<span class="zero">0</span>')
-      + '</td>'
-      + '<td class="nr">' + b.totalCount + '</td>'
-      + '<td class="nr">' + fmt(b.totalNAV) + '</td>'
-      + '<td class="nr">' + fmt(b.totalAUM) + '</td>'
-      + '<td class="nr">' + fmt(b.totalFee) + '</td>'
-      + '<td class="nr">' + gbadge(b.growthFee) + '</td>'
-      + '</tr>';
-  }).join("");
+function th(col,label,cls){
+  var arr=SORT_COL===col?(SORT_DIR<0?"▼":"▲"):"▼";
+  var sc=SORT_COL===col?" sorted":"";
+  return'<th class="'+(cls||"")+sc+'" onclick="setSort(\''+col+'\')">'
+    +label+'<span class="sort-arrow">'+arr+'</span></th>';
 }
 
-/* ── MODAL ───────────────────────────────────────────────── */
-function customerTable(accounts, showDelta) {
-  if (!accounts || !accounts.length)
-    return '<div class="empty">Không có dữ liệu.</div>';
-  return '<table class="mini"><thead><tr>'
-    + '<th>Tên khách hàng</th><th>Account</th>'
-    + '<th class="nr">NAV</th><th class="nr">AUM</th><th class="nr">Fee</th>'
-    + (showDelta ? '<th class="nr">Δ Fee</th>' : '')
-    + '</tr></thead><tbody>'
-    + accounts.map(function(r) {
-        var d = showDelta && r.prevFee !== undefined ? r.fee - r.prevFee : null;
-        return '<tr>'
-          + '<td>' + r.name + '</td>'
-          + '<td style="color:var(--mt)">' + r.account + '</td>'
-          + '<td class="nr">' + fmt(r.nav) + '</td>'
-          + '<td class="nr">' + fmt(r.aum) + '</td>'
-          + '<td class="nr">' + fmt(r.fee) + '</td>'
-          + (showDelta ? '<td class="nr">' + gdiff(d) + '</td>' : '')
-          + '</tr>';
-      }).join("")
-    + '</tbody></table>';
+function renderTable(list,hasPrev){
+  document.getElementById("tblHead").innerHTML='<tr>'
+    +'<th style="width:38px">#</th>'
+    +th("broker","AE")
+    +th("totalCount","Total Account","nr")
+    +th("newCount","New Account","nr")
+    +th("tTrading","Trading Value","nr")
+    +th("tFee","Trading Fee","nr")
+    +th("tNAV","NAV","nr")
+    +th("tAUM","AUM","nr")
+    +(hasPrev?th("gNAV","▲ NAV","nr"):'')
+    +(hasPrev?th("gAUM","▲ AUM","nr"):'')
+    +(hasPrev?th("gFee","▲ Fee","nr"):'')
+    +'</tr>';
+
+  var sorted=sortBrokers(list);
+  var totT=0,totF=0,totN=0,totA=0,totAcc=0,totNew=0;
+  sorted.forEach(function(b){totT+=b.tTrading;totF+=b.tFee;totN+=b.tNAV;totA+=b.tAUM;totAcc+=b.totalCount;totNew+=b.newCount;});
+
+  var rows=sorted.map(function(b,i){
+    var idx=BROKERS.indexOf(b);
+    var rc=i===0?"r1":i===1?"r2":i===2?"r3":"rx";
+    var tbadge='<span class="acc-badge">'+b.totalCount+' TK</span>';
+    var nbadge=b.newCount>0
+      ?'<span class="acc-badge new-acc">+'+b.newCount+' mới</span>'
+      :'<span class="acc-badge zero">—</span>';
+    return'<tr onclick="openModal('+idx+')">'
+      +'<td><span class="rank-circle '+rc+'">'+(i+1)+'</span></td>'
+      +'<td class="bfw">'+b.broker+'</td>'
+      +'<td class="nr">'+tbadge+'</td>'
+      +'<td class="nr">'+nbadge+'</td>'
+      +'<td class="nr">'+fd(b.tTrading)+'</td>'
+      +'<td class="nr">'+fd(b.tFee)+'</td>'
+      +'<td class="nr">'+fd(b.tNAV)+'</td>'
+      +'<td class="nr">'+fd(b.tAUM)+'</td>'
+      +(hasPrev?'<td class="nr">'+pct(b.gNAV)+'</td>':'')
+      +(hasPrev?'<td class="nr">'+pct(b.gAUM)+'</td>':'')
+      +(hasPrev?'<td class="nr">'+pct(b.gFee)+'</td>':'')
+      +'</tr>';
+  });
+
+  var totalRow='<tr class="total-row">'
+    +'<td></td><td class="total-label">TỔNG</td>'
+    +'<td class="nr"><span class="acc-badge">'+totAcc+' TK</span></td>'
+    +'<td class="nr"><span class="acc-badge new-acc">+'+totNew+' mới</span></td>'
+    +'<td class="nr" style="font-weight:700;color:var(--or)">'+fd(totT)+'</td>'
+    +'<td class="nr" style="font-weight:700;color:var(--or)">'+fd(totF)+'</td>'
+    +'<td class="nr" style="font-weight:700;color:var(--or)">'+fd(totN)+'</td>'
+    +'<td class="nr" style="font-weight:700;color:var(--or)">'+fd(totA)+'</td>'
+    +(hasPrev?'<td></td><td></td><td></td>':"")
+    +'</tr>';
+
+  document.getElementById("tblBody").innerHTML=rows.join("")+totalRow;
 }
 
-function openModal(idx) {
-  var b = BROKERS[idx];
-  document.getElementById("modalTitle").textContent = b.broker;
-  document.getElementById("cnt1").textContent = "(" + b.newAccounts.length   + ")";
-  document.getElementById("cnt2").textContent = "(" + b.existAccounts.length + ")";
-  document.getElementById("pane1").innerHTML  = customerTable(b.newAccounts,   false);
-  document.getElementById("pane2").innerHTML  = customerTable(b.existAccounts, true);
-  // reset tabs
-  document.getElementById("tab1").className  = "tab on";
-  document.getElementById("tab2").className  = "tab";
-  document.getElementById("pane1").className = "pane on";
-  document.getElementById("pane2").className = "pane";
+// ── CHARTS (chỉ hiện khi có tháng trước) ──────────────────
+function dc(id){if(CI[id]){CI[id].destroy();delete CI[id];}}
+var GC={'rgba(249,115,22,0.85)':'or','rgba(59,130,246,0.75)':'bl'};
+var GRID_C='rgba(0,0,0,0.05)',TEXT_C='#999';
+function baseOpts(fmtFn){
+  return{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{mode:"index",intersect:false,callbacks:{label:function(ctx){return ctx.dataset.label+": "+(fmtFn?fmtFn(ctx.raw):ctx.raw);}}}},
+    scales:{x:{grid:{color:GRID_C},ticks:{color:TEXT_C,font:{size:10},maxRotation:30}},
+      y:{grid:{color:GRID_C},ticks:{color:TEXT_C,font:{size:10},callback:function(v){return fmt(v)||"0";}}}}};
+}
+
+function renderCharts(brokers,hasPrev,curRows,prevRows,selA,selB){
+  var grid=document.getElementById("chartsGrid");
+  if(!hasPrev){grid.style.display="none";return;}
+  grid.style.display="grid";
+
+  // Build per-broker prev map
+  var pm={};
+  processRows(curRows,prevRows).brokers.forEach(function(b){pm[b.broker]=b;});
+
+  var top8=brokers.slice().sort(function(a,b){return b.tAUM-a.tAUM;}).slice(0,8);
+  var labs=top8.map(function(b){return b.broker.replace(/^(FA |LM2 |LM )/g,"").split(" ").slice(0,2).join(" ");});
+  var la=lbl(selA),lb2=lbl(selB);
+
+  // Chart 1: AUM
+  dc("cAUM");
+  document.getElementById("c1sub").textContent=lb2+" vs "+la;
+  document.getElementById("c1la").textContent=la;
+  document.getElementById("c1lb").textContent=lb2;
+  CI["cAUM"]=new Chart(document.getElementById("cAUM"),{type:"bar",
+    data:{labels:labs,datasets:[
+      {label:la,data:top8.map(function(b){return b.tAUM;}),backgroundColor:"rgba(249,115,22,0.85)",borderRadius:4,borderSkipped:false},
+      {label:lb2,data:top8.map(function(b){return b.pAUM;}),backgroundColor:"rgba(59,130,246,0.75)",borderRadius:4,borderSkipped:false}
+    ]},options:baseOpts(fmt)});
+
+  // Chart 2: NAV
+  dc("cNAV");
+  document.getElementById("c2sub").textContent=lb2+" vs "+la;
+  document.getElementById("c2la").textContent=la;
+  document.getElementById("c2lb").textContent=lb2;
+  CI["cNAV"]=new Chart(document.getElementById("cNAV"),{type:"bar",
+    data:{labels:labs,datasets:[
+      {label:la,data:top8.map(function(b){return b.tNAV;}),backgroundColor:"rgba(249,115,22,0.85)",borderRadius:4,borderSkipped:false},
+      {label:lb2,data:top8.map(function(b){return b.pNAV;}),backgroundColor:"rgba(59,130,246,0.75)",borderRadius:4,borderSkipped:false}
+    ]},options:baseOpts(fmt)});
+
+  // Chart 3: Fee
+  dc("cFee");
+  document.getElementById("c3sub").textContent=lb2+" vs "+la;
+  document.getElementById("c3la").textContent=la;
+  document.getElementById("c3lb").textContent=lb2;
+  CI["cFee"]=new Chart(document.getElementById("cFee"),{type:"bar",
+    data:{labels:labs,datasets:[
+      {label:la,data:top8.map(function(b){return b.tFee;}),backgroundColor:"rgba(249,115,22,0.85)",borderRadius:4,borderSkipped:false},
+      {label:lb2,data:top8.map(function(b){return b.pFee;}),backgroundColor:"rgba(59,130,246,0.75)",borderRadius:4,borderSkipped:false}
+    ]},options:baseOpts(fmt)});
+
+  // Chart 4: Donut TK mới vs hiện hữu
+  dc("cAcc");
+  var totNew=0,totExist=0;
+  brokers.forEach(function(b){totNew+=b.newCount;totExist+=b.existAcc.length;});
+  document.getElementById("c4sub").textContent=totNew+" TK mới · "+(totNew+totExist)+" tổng TK · "+la;
+  document.getElementById("c4leg").innerHTML=
+    '<div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>TK mới ('+totNew+')</div>'
+    +'<div class="legend-item"><div class="legend-dot" style="background:#e5e7eb"></div>TK hiện hữu ('+totExist+')</div>';
+  CI["cAcc"]=new Chart(document.getElementById("cAcc"),{type:"doughnut",
+    data:{labels:["TK mới","TK hiện hữu"],datasets:[{
+      data:[totNew,totExist],
+      backgroundColor:["#f97316","#e5e7eb"],
+      borderColor:["#fff","#fff"],borderWidth:3,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:"65%",
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:function(ctx){
+          var tot=ctx.dataset.data.reduce(function(a,b){return a+b;},0);
+          return ctx.label+": "+ctx.parsed+" ("+Math.round(ctx.parsed/tot*100)+"%)";
+        }}}}}});
+}
+
+// ── MODAL ──────────────────────────────────────────────────
+function ctbl(acc,delta){
+  if(!acc||!acc.length)return'<div class="empty-msg">Không có dữ liệu.</div>';
+  return'<table class="mini"><thead><tr>'
+    +'<th>Tên KH</th><th>Account</th>'
+    +'<th class="nr">Trading</th><th class="nr">NAV</th><th class="nr">AUM</th><th class="nr">Fee</th>'
+    +(delta?'<th class="nr">Δ NAV</th><th class="nr">Δ AUM</th><th class="nr">Δ Fee</th>':'')
+    +'</tr></thead><tbody>'
+    +acc.map(function(r){
+      return'<tr><td style="font-weight:500">'+r.name+'</td>'
+        +'<td style="color:var(--tx3);font-family:var(--mono);font-size:.72rem">'+r.account+'</td>'
+        +'<td class="nr">'+fd(r.trading)+'</td>'
+        +'<td class="nr">'+fd(r.nav)+'</td>'
+        +'<td class="nr">'+fd(r.aum)+'</td>'
+        +'<td class="nr">'+fd(r.fee)+'</td>'
+        +(delta?'<td class="nr">'+diff(r.prevNav!==undefined?r.nav-r.prevNav:null)+'</td>'
+          +'<td class="nr">'+diff(r.prevAum!==undefined?r.aum-r.prevAum:null)+'</td>'
+          +'<td class="nr">'+diff(r.prevFee!==undefined?r.fee-r.prevFee:null)+'</td>':'')
+        +'</tr>';
+    }).join("")+'</tbody></table>';
+}
+function openModal(idx){
+  var b=BROKERS[idx];
+  var hasPrev=MODE==="compare"&&!!SEL_B||(SHEETS.indexOf(SEL_A)>0);
+  document.getElementById("modalTitle").textContent=b.broker;
+  document.getElementById("cnt1").textContent="("+b.newAcc.length+")";
+  document.getElementById("cnt2").textContent="("+b.existAcc.length+")";
+  document.getElementById("pane1").innerHTML=ctbl(b.newAcc,false);
+  document.getElementById("pane2").innerHTML=ctbl(b.existAcc,hasPrev);
+  document.getElementById("tab1").className="tab on";document.getElementById("tab2").className="tab";
+  document.getElementById("pane1").className="pane on";document.getElementById("pane2").className="pane";
   document.getElementById("overlay").classList.add("open");
 }
+document.getElementById("closeBtn").onclick=function(){document.getElementById("overlay").classList.remove("open");};
+document.getElementById("overlay").onclick=function(e){if(e.target===document.getElementById("overlay"))document.getElementById("overlay").classList.remove("open");};
+document.getElementById("tab1").onclick=function(){
+  this.className="tab on";document.getElementById("tab2").className="tab";
+  document.getElementById("pane1").className="pane on";document.getElementById("pane2").className="pane";};
+document.getElementById("tab2").onclick=function(){
+  this.className="tab on";document.getElementById("tab1").className="tab";
+  document.getElementById("pane2").className="pane on";document.getElementById("pane1").className="pane";};
+document.getElementById("searchBox").oninput=function(){
+  var q=this.value.toLowerCase(),hasPrev=MODE==="compare"&&!!SEL_B||(SHEETS.indexOf(SEL_A)>0);
+  renderTable(BROKERS.filter(function(b){return b.broker.toLowerCase().indexOf(q)>=0;}),hasPrev);};
 
-document.getElementById("closeBtn").onclick = function() {
-  document.getElementById("overlay").classList.remove("open");
-};
-document.getElementById("overlay").onclick = function(e) {
-  if (e.target === document.getElementById("overlay"))
-    document.getElementById("overlay").classList.remove("open");
-};
-document.getElementById("tab1").onclick = function() {
-  this.className="tab on"; document.getElementById("tab2").className="tab";
-  document.getElementById("pane1").className="pane on"; document.getElementById("pane2").className="pane";
-};
-document.getElementById("tab2").onclick = function() {
-  this.className="tab on"; document.getElementById("tab1").className="tab";
-  document.getElementById("pane2").className="pane on"; document.getElementById("pane1").className="pane";
-};
-
-/* ── SEARCH ──────────────────────────────────────────────── */
-document.getElementById("searchBox").oninput = function() {
-  var q = this.value.toLowerCase();
-  renderTable(BROKERS.filter(function(b) {
-    return b.broker.toLowerCase().indexOf(q) >= 0;
-  }));
-};
-
-/* ── START ───────────────────────────────────────────────── */
 loadData();
 </script>
 </body>
