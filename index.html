@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Broker Performance Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 :root{
@@ -14,7 +14,7 @@
   --gr:#16a34a;--gr-bg:#f0fdf4;
   --rd:#dc2626;--rd-bg:#fef2f2;
   --blue:#2563eb;--blue-bg:#eff6ff;
-  --mono:'DM Mono',monospace;--sans:'Plus Jakarta Sans',system-ui,sans-serif;--r:10px;
+  --mono:'Inter Tight',monospace;--sans:'Inter',system-ui,sans-serif;--r:10px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--tx);font-family:var(--sans);font-size:14px;min-height:100vh}
@@ -260,10 +260,16 @@ var CI={};  // chart instances
 // ── FORMAT HELPERS ───────────────────────────────────────────
 function fmt(n){
   if(n===null||n===undefined||n===0)return null;
+  // Full number with dot-separated thousands (Vietnamese style: 3.409.095)
+  return n.toLocaleString("vi-VN");
+}
+// Short format for charts (keep abbreviated for axis readability)
+function fmtShort(n){
+  if(n===null||n===undefined||n===0)return null;
   var a=Math.abs(n),s=n<0?"-":"";
-  if(a>=1e9)return s+(a/1e9).toFixed(2)+" tỷ";
-  if(a>=1e6)return s+(a/1e6).toFixed(1)+" tr";
-  if(a>=1e3)return s+(a/1e3).toFixed(0)+"k";
+  if(a>=1e9)return s+(a/1e9).toFixed(2)+"B";
+  if(a>=1e6)return s+(a/1e6).toFixed(1)+"M";
+  if(a>=1e3)return s+(a/1e3).toFixed(0)+"K";
   return s+a.toLocaleString("vi-VN");
 }
 function fd(n){var v=fmt(n);return v||'<span class="dash-cell">—</span>';}
@@ -435,9 +441,9 @@ function renderView(){
   // KPIs
   document.getElementById("sNew").textContent=s.totalNew;
   document.getElementById("sTotal").textContent="Tổng TK: "+s.totalAccounts;
-  document.getElementById("sNAV").textContent=fmt(s.cNAV)||"0";
-  document.getElementById("sAUM").textContent=fmt(s.cAUM)||"0";
-  document.getElementById("sFee").textContent=fmt(s.cFee)||"0";
+  document.getElementById("sNAV").textContent=fmtShort(s.cNAV)||"0";
+  document.getElementById("sAUM").textContent=fmtShort(s.cAUM)||"0";
+  document.getElementById("sFee").textContent=fmtShort(s.cFee)||"0";
   // Clear badges (no comparison in this mode)
   document.getElementById("sNAVg").innerHTML="";
   document.getElementById("sAUMg").innerHTML="";
@@ -515,9 +521,9 @@ function renderCharts(){
   document.getElementById("cNAVSubtitle").textContent="Top 10 · "+subtitle;
   document.getElementById("cAUMSubtitle").textContent="Top 10 · "+subtitle;
 
-  makeHBar("cFee",top10.map(function(b){return b.tFee;}),labs,"rgba(249,115,22,0.85)",fmt);
-  makeHBar("cNAV",top10.map(function(b){return b.tNAV;}),labs,"rgba(37,99,235,0.80)",fmt);
-  makeHBar("cAUM",top10.map(function(b){return b.tAUM;}),labs,"rgba(22,163,74,0.80)",fmt);
+  makeHBar("cFee",top10.map(function(b){return b.tFee;}),labs,"rgba(249,115,22,0.85)",fmtShort);
+  makeHBar("cNAV",top10.map(function(b){return b.tNAV;}),labs,"rgba(37,99,235,0.80)",fmtShort);
+  makeHBar("cAUM",top10.map(function(b){return b.tAUM;}),labs,"rgba(22,163,74,0.80)",fmtShort);
 }
 
 // ── TABLE ────────────────────────────────────────────────────
