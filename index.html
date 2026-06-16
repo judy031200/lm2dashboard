@@ -260,20 +260,13 @@ var CI={};  // chart instances
 // ── FORMAT HELPERS ───────────────────────────────────────────
 function fmt(n){
   if(n===null||n===undefined||n===0)return null;
-  var a=Math.abs(n),s=n<0?"-":"";
-  if(a>=1e9)return s+(a/1e9).toFixed(2)+" tỷ";
-  if(a>=1e6)return s+(a/1e6).toFixed(1)+" tr";
-  if(a>=1e3)return s+(a/1e3).toFixed(0)+"k";
-  return s+a.toLocaleString("vi-VN");
+  var s=n<0?"-":"";
+  return s+(Math.abs(n)/1e9).toFixed(2)+" tỷ";
 }
-// Short format for charts (keep abbreviated for axis readability)
 function fmtShort(n){
   if(n===null||n===undefined||n===0)return null;
-  var a=Math.abs(n),s=n<0?"-":"";
-  if(a>=1e9)return s+(a/1e9).toFixed(2)+"B";
-  if(a>=1e6)return s+(a/1e6).toFixed(1)+"M";
-  if(a>=1e3)return s+(a/1e3).toFixed(0)+"K";
-  return s+a.toLocaleString("vi-VN");
+  var s=n<0?"-":"";
+  return s+(Math.abs(n)/1e9).toFixed(2)+" tỷ";
 }
 function fd(n){var v=fmt(n);return v||'<span class="dash-cell">—</span>';}
 function fdd(n){
@@ -390,17 +383,21 @@ function computeBrokers(){
       } else {
         b.existAcc.push({name:row.name,account:row.account,nav:row.nav,aum:row.aum,fee:row.fee,trading:row.trading});
       }
+      // track unique accounts for dedup
+      if(!b._accounts)b._accounts={};
+      b._accounts[row.account]=true;
     });
   });
 
   var cN=0,cA=0,cF=0,cT=0,nCnt=0,totAcc=0;
   var brokers=Object.keys(bm).map(function(k){
     var b=bm[k];
+    var uniqueCount=Object.keys(b._accounts||{}).length;
     cN+=b.tNAV;cA+=b.tAUM;cF+=b.tFee;cT+=b.tTrading;
     nCnt+=b.newCount;
-    totAcc+=b.newAcc.length+b.existAcc.length;
+    totAcc+=uniqueCount;
     return{broker:b.broker,newAcc:b.newAcc,existAcc:b.existAcc,
-      newCount:b.newCount,totalCount:b.newAcc.length+b.existAcc.length,
+      newCount:b.newCount,totalCount:uniqueCount,
       tNAV:b.tNAV,tAUM:b.tAUM,tFee:b.tFee,tTrading:b.tTrading};
   });
 
