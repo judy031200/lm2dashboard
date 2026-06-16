@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Broker Performance Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 :root{
@@ -14,7 +14,7 @@
   --gr:#16a34a;--gr-bg:#f0fdf4;
   --rd:#dc2626;--rd-bg:#fef2f2;
   --blue:#2563eb;--blue-bg:#eff6ff;
-  --mono:'JetBrains Mono',monospace;--sans:'Inter',system-ui,sans-serif;--r:10px;
+  --mono:'DM Mono',monospace;--sans:'Plus Jakarta Sans',system-ui,sans-serif;--r:10px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--tx);font-family:var(--sans);font-size:14px;min-height:100vh}
@@ -37,7 +37,8 @@ body{background:var(--bg);color:var(--tx);font-family:var(--sans);font-size:14px
 
 /* CONTROLS */
 .controls{background:var(--panel);border-bottom:1px solid var(--bd);
-  padding:10px 32px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  padding:10px 32px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .ctrl-label{font-size:.72rem;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap}
 .divv{width:1px;height:20px;background:var(--bd);margin:0 4px}
 .sheet-tabs{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
@@ -142,16 +143,28 @@ tbody td{padding:10px 12px;font-size:.8rem;vertical-align:middle}
 .mini td{padding:8px 10px;border-bottom:1px solid #f3f3f3}
 .empty-msg{color:var(--tx3);font-size:.82rem;padding:16px 0;text-align:center}
 
+/* CHARTS GRID */
+.charts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:0 32px 16px}
+.chart-card{background:var(--panel);border:1px solid var(--bd);border-radius:var(--r);padding:16px 18px}
+.chart-title{font-size:.82rem;font-weight:700;color:var(--tx);margin-bottom:2px;display:flex;align-items:center;gap:7px}
+.chart-title::before{content:"";display:inline-block;width:3px;height:13px;border-radius:2px;flex-shrink:0}
+.ct-fee::before{background:#f97316}
+.ct-nav::before{background:#2563eb}
+.ct-aum::before{background:#16a34a}
+.chart-sub{font-size:.7rem;color:var(--tx3);margin-bottom:10px}
+
 /* FOOTER */
 .footer{text-align:center;padding:12px;font-size:.7rem;color:var(--tx3);background:var(--panel);
   border:1px solid var(--bd);border-top:none;margin:0 32px 28px;border-radius:0 0 var(--r) var(--r)}
 .btn{background:#fff;border:1.5px solid var(--bd);color:var(--tx2);padding:5px 14px;border-radius:20px;cursor:pointer;font-size:.78rem;font-family:var(--sans)}
 .btn:hover{border-color:var(--or);color:var(--or)}
 
+@media(max-width:1000px){.charts-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:640px){
-  .hdr,.controls,.kpi-strip,.section,.footer,.mode-hint,.err{padding-left:14px;padding-right:14px;margin-left:0;margin-right:0;border-radius:0}
-  .kpi-strip,.section,.footer{margin-left:10px;margin-right:10px}
+  .hdr,.controls,.kpi-strip,.section,.footer,.mode-hint,.err,.charts-grid{padding-left:14px;padding-right:14px;margin-left:0;margin-right:0;border-radius:0}
+  .kpi-strip,.section,.footer,.charts-grid{margin-left:10px;margin-right:10px}
   .kpi-strip{grid-template-columns:1fr 1fr}.bar-name{width:90px}
+  .charts-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -186,6 +199,25 @@ tbody td{padding:10px 12px;font-size:.8rem;vertical-align:middle}
 <div class="section">
   <div class="sec-hdr"><div class="sec-title">AUM theo broker <span>top 10</span></div></div>
   <div class="sec-body" id="barChart"></div>
+</div>
+
+<!-- CHARTS GRID -->
+<div class="charts-grid" id="chartsGrid">
+  <div class="chart-card">
+    <div class="chart-title ct-fee">Trading Fee</div>
+    <div class="chart-sub" id="cFeeSubtitle">Top 10 broker</div>
+    <div style="position:relative;height:260px"><canvas id="cFee"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title ct-nav">NAV</div>
+    <div class="chart-sub" id="cNAVSubtitle">Top 10 broker</div>
+    <div style="position:relative;height:260px"><canvas id="cNAV"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title ct-aum">AUM</div>
+    <div class="chart-sub" id="cAUMSubtitle">Top 10 broker</div>
+    <div style="position:relative;height:260px"><canvas id="cAUM"></canvas></div>
+  </div>
 </div>
 
 <!-- TABLE -->
@@ -223,6 +255,7 @@ var RAW={},LABELS={},SHEETS=[];
 var SELECTED=[];   // array of selected sheet keys, ordered as in SHEETS
 var BROKERS=[];
 var SORT_COL="tAUM",SORT_DIR=-1;
+var CI={};  // chart instances
 
 // ── FORMAT HELPERS ───────────────────────────────────────────
 function fmt(n){
@@ -417,6 +450,7 @@ function renderView(){
       : "NAV & AUM cộng dồn chênh lệch: "+SELECTED.map(lbl).join("+")+" · "+s.totalAccounts+" tài khoản";
 
   renderBarChart();
+  renderCharts();
   renderTable(BROKERS);
 }
 
@@ -433,6 +467,57 @@ function renderBarChart(){
       +'<div class="bar-track"><div class="bar-fill '+cls+'" style="width:'+p+'%">'
       +'<span class="bar-val">'+(val||"0")+'</span></div></div></div>';
   }).join("");
+}
+
+// ── CHARTS (Fee / NAV / AUM) ─────────────────────────────────
+function dc(id){if(CI[id]){CI[id].destroy();delete CI[id];}}
+
+function makeHBar(id,data,labels,color,fmtFn){
+  dc(id);
+  var GRID='rgba(0,0,0,0.05)',TC='#999';
+  CI[id]=new Chart(document.getElementById(id),{
+    type:"bar",
+    data:{
+      labels:labels,
+      datasets:[{
+        data:data,
+        backgroundColor:data.map(function(v){return v<0?"rgba(220,38,38,0.75)":color;}),
+        borderRadius:4,
+        borderSkipped:false
+      }]
+    },
+    options:{
+      indexAxis:"y",
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:function(ctx){
+          return" "+(fmtFn?fmtFn(ctx.raw):ctx.raw);
+        }}}
+      },
+      scales:{
+        x:{grid:{color:GRID},ticks:{color:TC,font:{size:9},callback:function(v){return fmtFn?fmtFn(v):v;}}},
+        y:{grid:{display:false},ticks:{color:"#555",font:{size:10}}}
+      }
+    }
+  });
+}
+
+function renderCharts(){
+  var top10=BROKERS.slice().sort(function(a,b){return Math.abs(b.tAUM)-Math.abs(a.tAUM);}).slice(0,10);
+  var labs=top10.map(function(b){
+    return b.broker.replace(/^(FA LM2 |FA LM |FA HCM |FA HQ2 |LM2 |LM |HCM )/,"").split(" ").slice(0,3).join(" ");
+  });
+
+  var subtitle=SELECTED.map(lbl).join(" + ");
+  document.getElementById("cFeeSubtitle").textContent="Top 10 · "+subtitle;
+  document.getElementById("cNAVSubtitle").textContent="Top 10 · "+subtitle;
+  document.getElementById("cAUMSubtitle").textContent="Top 10 · "+subtitle;
+
+  makeHBar("cFee",top10.map(function(b){return b.tFee;}),labs,"rgba(249,115,22,0.85)",fmt);
+  makeHBar("cNAV",top10.map(function(b){return b.tNAV;}),labs,"rgba(37,99,235,0.80)",fmt);
+  makeHBar("cAUM",top10.map(function(b){return b.tAUM;}),labs,"rgba(22,163,74,0.80)",fmt);
 }
 
 // ── TABLE ────────────────────────────────────────────────────
