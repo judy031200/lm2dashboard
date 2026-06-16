@@ -260,8 +260,11 @@ var CI={};  // chart instances
 // ── FORMAT HELPERS ───────────────────────────────────────────
 function fmt(n){
   if(n===null||n===undefined||n===0)return null;
-  // Full number with dot-separated thousands (Vietnamese style: 3.409.095)
-  return n.toLocaleString("vi-VN");
+  var a=Math.abs(n),s=n<0?"-":"";
+  if(a>=1e9)return s+(a/1e9).toFixed(2)+" tỷ";
+  if(a>=1e6)return s+(a/1e6).toFixed(1)+" tr";
+  if(a>=1e3)return s+(a/1e3).toFixed(0)+"k";
+  return s+a.toLocaleString("vi-VN");
 }
 // Short format for charts (keep abbreviated for axis readability)
 function fmtShort(n){
@@ -441,9 +444,9 @@ function renderView(){
   // KPIs
   document.getElementById("sNew").textContent=s.totalNew;
   document.getElementById("sTotal").textContent="Tổng TK: "+s.totalAccounts;
-  document.getElementById("sNAV").textContent=fmtShort(s.cNAV)||"0";
-  document.getElementById("sAUM").textContent=fmtShort(s.cAUM)||"0";
-  document.getElementById("sFee").textContent=fmtShort(s.cFee)||"0";
+  document.getElementById("sNAV").textContent=fmt(s.cNAV)||"0";
+  document.getElementById("sAUM").textContent=fmt(s.cAUM)||"0";
+  document.getElementById("sFee").textContent=fmt(s.cFee)||"0";
   // Clear badges (no comparison in this mode)
   document.getElementById("sNAVg").innerHTML="";
   document.getElementById("sAUMg").innerHTML="";
@@ -535,11 +538,12 @@ function th(col,label,cls){
 }
 
 function renderTable(list){
+  var multi=SELECTED.length>1;
   document.getElementById("tblHead").innerHTML='<tr>'
     +'<th style="width:38px">#</th>'
     +th("broker","AE")
     +th("totalCount","Total Account","nr")
-    +th("newCount","New Account","nr")
+    +(!multi?th("newCount","New Account","nr"):'')
     +th("tTrading","Trading Value","nr")
     +th("tFee","Trading Fee","nr")
     +th("tNAV","NAV","nr")
@@ -561,7 +565,7 @@ function renderTable(list){
       +'<td><span class="rank-circle '+rc+'">'+(i+1)+'</span></td>'
       +'<td class="bfw">'+b.broker+'</td>'
       +'<td class="nr">'+tbadge+'</td>'
-      +'<td class="nr">'+nbadge+'</td>'
+      +(!multi?'<td class="nr">'+nbadge+'</td>':'')
       +'<td class="nr">'+fd(b.tTrading)+'</td>'
       +'<td class="nr">'+fd(b.tFee)+'</td>'
       +'<td class="nr">'+fd(b.tNAV)+'</td>'
@@ -572,7 +576,7 @@ function renderTable(list){
   var totalRow='<tr class="total-row">'
     +'<td></td><td class="total-label">TỔNG</td>'
     +'<td class="nr"><span class="acc-badge">'+totAcc+' TK</span></td>'
-    +'<td class="nr"><span class="acc-badge new-acc">+'+totNew+' mới</span></td>'
+    +(!multi?'<td class="nr"><span class="acc-badge new-acc">+'+totNew+' mới</span></td>':'')
     +'<td class="nr" style="font-weight:700;color:var(--or)">'+fd(totT)+'</td>'
     +'<td class="nr" style="font-weight:700;color:var(--or)">'+fd(totF)+'</td>'
     +'<td class="nr" style="font-weight:700;color:var(--or)">'+fd(totN)+'</td>'
