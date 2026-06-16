@@ -302,56 +302,54 @@ function toggleSheet(s){
 
 // ── COMPUTE DATA ─────────────────────────────────────────────
 /*
-  Logic:
-  - 1 tháng được chọn → xem tháng đó bình thường
-  - 2 tháng được chọn (A, B, A < B theo thứ tự) → NAV/AUM = tháng B - tháng A
-    fee vẫn cộng dồn (tháng B - tháng A có thể âm, nhưng fee thì accumulate)
-    Actually: fee cũng lấy B - A (chênh lệch)
-  - 3+ tháng → cộng dồn tất cả
-    Note: với 3+ tháng ta cộng giá trị tuyệt đối từng tháng
+  Logic (mỗi tháng tự so với tháng liền trước):
+  - Mỗi tháng được chọn: NAV_delta = NAV(tháng đó) − NAV(tháng trước)
+                          AUM_delta = AUM(tháng đó) − AUM(tháng trước)
+                          Fee / Trading = lấy giá trị tháng đó (tuyệt đối)
+  - Nếu không có tháng trước (tháng đầu tiên trong data): lấy giá trị tuyệt đối
+  - Nhiều tháng → cộng dồn delta của từng tháng
+  - TK mới / TK hiện hữu lấy từ tháng được chọn (không tính tháng trước)
 */
 function computeBrokers(){
   var n=SELECTED.length;
-  if(n===0)return{brokers:[],summary:{totalNew:0,totalAccounts:0,cNAV:0,cAUM:0,cFee:0,isOneSel:true,isDelta:false}};
+  if(n===0)return{brokers:[],summary:{totalNew:0,totalAccounts:0,cNAV:0,cAUM:0,cFee:0},hint:""};
 
-  var isDelta=(n===2);
-  var isOneSel=(n===1);
-
-  // Build broker map
+  // For each selected sheet, compute delta vs previous sheet in SHEETS order
   var bm={};
 
-  function addRows(rows,sign){
-    // sign=+1 or -1 (for delta: last month + 1, first month -1)
-    rows.forEach(function(row){
+  SELECTED.forEach(function(s){
+    var sidx=SHEETS.indexOf(s);
+    var curRows=RAW[s]||[];
+    var prevRows=sidx>0?(RAW[SHEETS[sidx-1]]||[]):[];
+
+    // Build prev map by account
+    var pm={};
+    prevRows.forEach(function(r){pm[r.account]=r;});
+
+    curRows.forEach(function(row){
       var bk=row.broker||"Không rõ";
       if(!bm[bk])bm[bk]={broker:bk,newAcc:[],existAcc:[],
         tNAV:0,tAUM:0,tFee:0,tTrading:0,newCount:0};
       var b=bm[bk];
-      b.tNAV+=sign*row.nav;
-      b.tAUM+=sign*row.aum;
-      b.tFee+=sign*row.fee;
-      b.tTrading+=sign*row.trading;
-      if(sign>0){
-        if(row.isNew===true){
-          b.newCount++;
-          b.newAcc.push({name:row.name,account:row.account,nav:row.nav,aum:row.aum,fee:row.fee,trading:row.trading});
-        } else {
-          b.existAcc.push({name:row.name,account:row.account,nav:row.nav,aum:row.aum,fee:row.fee,trading:row.trading});
-        }
+
+      // NAV & AUM = delta vs prev; Fee & Trading = absolute of this month
+      var prev=pm[row.account];
+      var prevNAV=prev?prev.nav:0;
+      var prevAUM=prev?prev.aum:0;
+
+      b.tNAV+=(row.nav-prevNAV);
+      b.tAUM+=(row.aum-prevAUM);
+      b.tFee+=row.fee;
+      b.tTrading+=row.trading;
+
+      if(row.isNew===true){
+        b.newCount++;
+        b.newAcc.push({name:row.name,account:row.account,nav:row.nav,aum:row.aum,fee:row.fee,trading:row.trading});
+      } else {
+        b.existAcc.push({name:row.name,account:row.account,nav:row.nav,aum:row.aum,fee:row.fee,trading:row.trading});
       }
     });
-  }
-
-  if(isDelta){
-    // SELECTED[0] = earlier month (subtract), SELECTED[1] = later month (add)
-    addRows(RAW[SELECTED[0]]||[], -1);
-    addRows(RAW[SELECTED[1]]||[], +1);
-  } else {
-    // single or 3+: sum all selected
-    SELECTED.forEach(function(s){
-      addRows(RAW[s]||[], +1);
-    });
-  }
+  });
 
   var cN=0,cA=0,cF=0,cT=0,nCnt=0,totAcc=0;
   var brokers=Object.keys(bm).map(function(k){
@@ -363,8 +361,20 @@ function computeBrokers(){
       newCount:b.newCount,totalCount:b.newAcc.length+b.existAcc.length,
       tNAV:b.tNAV,tAUM:b.tAUM,tFee:b.tFee,tTrading:b.tTrading};
   });
-  return{brokers:brokers,isDelta:isDelta,isOneSel:isOneSel,
-    summary:{totalNew:nCnt,totalAccounts:totAcc,cNAV:cN,cAUM:cA,cFee:cF}};
+
+  // Build hint string
+  var hintParts=SELECTED.map(function(s){
+    var sidx=SHEETS.indexOf(s);
+    var prevLabel=sidx>0?lbl(SHEETS[sidx-1]):"—";
+    return lbl(s)+"−"+prevLabel;
+  });
+  var hint=n===1
+    ? "NAV & AUM = "+hintParts[0]
+    : "NAV & AUM = ("+hintParts.join(") + (")+")";
+
+  return{brokers:brokers,
+    summary:{totalNew:nCnt,totalAccounts:totAcc,cNAV:cN,cAUM:cA,cFee:cF},
+    hint:hint};
 }
 
 // ── SORT ─────────────────────────────────────────────────────
@@ -385,17 +395,9 @@ function renderView(){
   var res=computeBrokers();
   BROKERS=res.brokers;
   var s=res.summary;
-  var isDelta=res.isDelta;
 
   // Mode hint
-  var hint=document.getElementById("modeHint");
-  if(SELECTED.length===1){
-    hint.textContent="Đang xem: "+lbl(SELECTED[0]);
-  } else if(isDelta){
-    hint.textContent="Chênh lệch: "+lbl(SELECTED[1])+" − "+lbl(SELECTED[0])+" (NAV & AUM = tháng sau − tháng trước)";
-  } else {
-    hint.textContent="Cộng dồn: "+SELECTED.map(lbl).join(" + ");
-  }
+  document.getElementById("modeHint").textContent=res.hint;
 
   // KPIs
   document.getElementById("sNew").textContent=s.totalNew;
@@ -411,10 +413,8 @@ function renderView(){
   // Footer
   document.getElementById("footer").textContent=
     SELECTED.length===1
-      ? "ĐANG XEM: "+lbl(SELECTED[0])+" · "+s.totalAccounts+" tài khoản"
-      : isDelta
-        ? "CHÊNH LỆCH: "+lbl(SELECTED[1])+" − "+lbl(SELECTED[0])+" · "+s.totalAccounts+" tài khoản"
-        : "CỘNG DỒN: "+SELECTED.map(lbl).join("+")+" · "+s.totalAccounts+" tài khoản";
+      ? "NAV & AUM = "+lbl(SELECTED[0])+" − tháng trước · "+s.totalAccounts+" tài khoản"
+      : "NAV & AUM cộng dồn chênh lệch: "+SELECTED.map(lbl).join("+")+" · "+s.totalAccounts+" tài khoản";
 
   renderBarChart();
   renderTable(BROKERS);
