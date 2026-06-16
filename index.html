@@ -39,24 +39,21 @@ body{background:var(--bg);color:var(--tx);font-family:var(--sans);font-size:14px
 .controls{background:var(--panel);border-bottom:1px solid var(--bd);
   padding:10px 32px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .ctrl-label{font-size:.72rem;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap}
-.mode-toggle{display:flex;background:#f3f3f3;border:1px solid var(--bd);border-radius:7px;overflow:hidden}
-.mode-btn{padding:5px 14px;font-size:.78rem;color:var(--tx2);cursor:pointer;transition:all .12s;white-space:nowrap}
-.mode-btn.on{background:var(--or);color:#fff;font-weight:600}
 .divv{width:1px;height:20px;background:var(--bd);margin:0 4px}
 .sheet-tabs{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+
+/* Month tab — multi-select */
 .stab{padding:5px 14px;font-size:.8rem;font-weight:500;color:var(--tx2);cursor:pointer;
-  border:1.5px solid var(--bd);border-radius:20px;transition:all .12s;white-space:nowrap;background:#fff}
+  border:1.5px solid var(--bd);border-radius:20px;transition:all .12s;white-space:nowrap;background:#fff;user-select:none}
 .stab:hover{border-color:var(--or);color:var(--or)}
 .stab.on{background:var(--or);border-color:var(--or);color:#fff;font-weight:600}
-.stab.cmp-a{background:var(--blue-bg);border-color:var(--blue);color:var(--blue);font-weight:600}
-.stab.cmp-b{background:#fff7ed;border-color:var(--or);color:var(--or2);font-weight:600}
-.cmp-arr{color:var(--tx3);font-size:.85rem;margin:0 2px}
 
-/* MODE LABEL */
-.mode-label{padding:8px 32px 0;display:none}
-.ml{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:5px;font-size:.75rem;font-weight:500}
-.ml.single{background:var(--or-bg);color:var(--or2)}
-.ml.compare{background:var(--blue-bg);color:var(--blue)}
+/* Mode hint */
+.mode-hint{
+  margin:6px 32px 0;
+  display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:5px;
+  font-size:.75rem;font-weight:500;background:var(--or-bg);color:var(--or2)
+}
 
 /* ERR */
 .err{margin:14px 32px;background:var(--rd-bg);border-left:3px solid var(--rd);
@@ -74,19 +71,6 @@ body{background:var(--bg);color:var(--tx);font-family:var(--sans);font-size:14px
 .kpi-sub{font-size:.7rem;color:var(--tx3);margin-top:3px}
 .kbadge{display:inline-flex;align-items:center;gap:2px;font-size:.68rem;font-weight:600;padding:2px 6px;border-radius:4px;margin-top:4px}
 .kbadge.up{background:var(--gr-bg);color:var(--gr)}.kbadge.dn{background:var(--rd-bg);color:var(--rd)}.kbadge.nu{background:#f3f3f3;color:var(--tx3)}
-
-/* CHARTS */
-.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 32px 16px}
-.chart-card{background:var(--panel);border:1px solid var(--bd);border-radius:var(--r);padding:18px 20px}
-.chart-card.full{grid-column:1/-1}
-.chart-title{font-size:.82rem;font-weight:700;color:var(--tx);margin-bottom:3px;
-  display:flex;align-items:center;gap:7px}
-.chart-title::before{content:"";display:inline-block;width:3px;height:13px;background:var(--or);border-radius:2px}
-.chart-sub{font-size:.7rem;color:var(--tx3);margin-bottom:12px}
-.chart-legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--tx2)}
-.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
-.no-prev{display:none;padding:40px 0;text-align:center;color:var(--tx3);font-size:.8rem}
 
 /* SECTION */
 .section{background:var(--panel);border:1px solid var(--bd);border-radius:var(--r);margin:0 32px 16px}
@@ -134,6 +118,11 @@ tbody td{padding:10px 12px;font-size:.8rem;vertical-align:middle}
 .dash-cell{color:#ccc}
 .total-label{font-weight:700;color:var(--or);font-size:.82rem}
 
+/* Delta columns */
+.d-up{color:var(--gr);font-family:var(--mono);font-size:.77rem}
+.d-dn{color:var(--rd);font-family:var(--mono);font-size:.77rem}
+.d-nu{color:var(--tx3);font-family:var(--mono);font-size:.77rem}
+
 /* MODAL */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
 .overlay.open{display:flex}
@@ -152,9 +141,6 @@ tbody td{padding:10px 12px;font-size:.8rem;vertical-align:middle}
 .mini th.nr{text-align:right}
 .mini td{padding:8px 10px;border-bottom:1px solid #f3f3f3}
 .empty-msg{color:var(--tx3);font-size:.82rem;padding:16px 0;text-align:center}
-.d-up{color:var(--gr);font-family:var(--mono);font-size:.77rem}
-.d-dn{color:var(--rd);font-family:var(--mono);font-size:.77rem}
-.d-nu{color:var(--tx3);font-family:var(--mono);font-size:.77rem}
 
 /* FOOTER */
 .footer{text-align:center;padding:12px;font-size:.7rem;color:var(--tx3);background:var(--panel);
@@ -163,10 +149,9 @@ tbody td{padding:10px 12px;font-size:.8rem;vertical-align:middle}
 .btn:hover{border-color:var(--or);color:var(--or)}
 
 @media(max-width:640px){
-  .hdr,.controls,.kpi-strip,.section,.footer,.mode-label,.err,.charts-grid{padding-left:14px;padding-right:14px;margin-left:0;margin-right:0;border-radius:0}
-  .kpi-strip,.section,.footer,.charts-grid{margin-left:10px;margin-right:10px}
+  .hdr,.controls,.kpi-strip,.section,.footer,.mode-hint,.err{padding-left:14px;padding-right:14px;margin-left:0;margin-right:0;border-radius:0}
+  .kpi-strip,.section,.footer{margin-left:10px;margin-right:10px}
   .kpi-strip{grid-template-columns:1fr 1fr}.bar-name{width:90px}
-  .charts-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -183,19 +168,11 @@ tbody td{padding:10px 12px;font-size:.8rem;vertical-align:middle}
 </div>
 
 <div class="controls">
-  <span class="ctrl-label">Chế độ</span>
-  <div class="mode-toggle">
-    <div class="mode-btn on" id="modeOne" onclick="setMode('single')">Xem tháng</div>
-    <div class="mode-btn"   id="modeCmp"  onclick="setMode('compare')">So sánh</div>
-  </div>
-  <div class="divv"></div>
-  <span class="ctrl-label" id="tabsLabel">Tháng</span>
+  <span class="ctrl-label">Tháng</span>
   <div class="sheet-tabs" id="sheetTabs"></div>
-  <span class="cmp-arr" id="cmpArrow" style="display:none">→</span>
-  <div class="sheet-tabs" id="sheetTabsB" style="display:none"></div>
 </div>
 
-<div class="mode-label" id="modeLabel"><div class="ml single" id="mlBadge">—</div></div>
+<div id="modeHint" class="mode-hint">—</div>
 <div class="err" id="errBox" style="display:none"></div>
 
 <div class="kpi-strip">
@@ -209,43 +186,6 @@ tbody td{padding:10px 12px;font-size:.8rem;vertical-align:middle}
 <div class="section">
   <div class="sec-hdr"><div class="sec-title">AUM theo broker <span>top 10</span></div></div>
   <div class="sec-body" id="barChart"></div>
-</div>
-
-<!-- CHARTS GRID — chỉ hiện khi có tháng trước -->
-<div class="charts-grid" id="chartsGrid" style="display:none">
-  <div class="chart-card">
-    <div class="chart-title">AUM — So sánh 2 tháng</div>
-    <div class="chart-sub" id="c1sub">—</div>
-    <div class="chart-legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div><span id="c1la">—</span></div>
-      <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div><span id="c1lb">—</span></div>
-    </div>
-    <div style="position:relative;height:220px"><canvas id="cAUM" role="img" aria-label="AUM so sánh 2 tháng"></canvas></div>
-  </div>
-  <div class="chart-card">
-    <div class="chart-title">NAV — So sánh 2 tháng</div>
-    <div class="chart-sub" id="c2sub">—</div>
-    <div class="chart-legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div><span id="c2la">—</span></div>
-      <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div><span id="c2lb">—</span></div>
-    </div>
-    <div style="position:relative;height:220px"><canvas id="cNAV" role="img" aria-label="NAV so sánh 2 tháng"></canvas></div>
-  </div>
-  <div class="chart-card">
-    <div class="chart-title">Trading Fee — So sánh 2 tháng</div>
-    <div class="chart-sub" id="c3sub">—</div>
-    <div class="chart-legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div><span id="c3la">—</span></div>
-      <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div><span id="c3lb">—</span></div>
-    </div>
-    <div style="position:relative;height:220px"><canvas id="cFee" role="img" aria-label="Fee so sánh 2 tháng"></canvas></div>
-  </div>
-  <div class="chart-card">
-    <div class="chart-title">TK mới vs Hiện hữu</div>
-    <div class="chart-sub" id="c4sub">—</div>
-    <div class="chart-legend" id="c4leg"></div>
-    <div style="position:relative;height:220px"><canvas id="cAcc" role="img" aria-label="TK mới vs hiện hữu"></canvas></div>
-  </div>
 </div>
 
 <!-- TABLE -->
@@ -278,9 +218,13 @@ tbody td{padding:10px 12px;font-size:.8rem;vertical-align:middle}
 
 <script>
 var API_URL="https://script.google.com/macros/s/AKfycbzu2bwTwy8x5OqFIFSIXlqjwpLDbz7d5EoVK-oRhzjdxb11wT1E4q7tcfzGq5UnV0IOmQ/exec";
-var RAW={},LABELS={},SHEETS=[],MODE="single",SEL_A="",SEL_B="",BROKERS=[],SORT_COL="tAUM",SORT_DIR=-1;
-var CI={};// chart instances
+// NOTE: keep the original API URL from the source file
+var RAW={},LABELS={},SHEETS=[];
+var SELECTED=[];   // array of selected sheet keys, ordered as in SHEETS
+var BROKERS=[];
+var SORT_COL="tAUM",SORT_DIR=-1;
 
+// ── FORMAT HELPERS ───────────────────────────────────────────
 function fmt(n){
   if(n===null||n===undefined||n===0)return null;
   var a=Math.abs(n),s=n<0?"-":"";
@@ -290,26 +234,23 @@ function fmt(n){
   return s+a.toLocaleString("vi-VN");
 }
 function fd(n){var v=fmt(n);return v||'<span class="dash-cell">—</span>';}
-function pct(v){
-  if(v===null||v===undefined)return'<span class="gbadge nu">—</span>';
-  var c=v>0?"up":v<0?"dn":"nu",a=v>0?"▲":v<0?"▼":"=";
-  return'<span class="gbadge '+c+'">'+a+" "+Math.abs(v).toFixed(1)+"%</span>";
+function fdd(n){
+  // for delta values: show + or - with color
+  if(n===null||n===undefined)return'<span class="d-nu">—</span>';
+  var c=n>0?"d-up":n<0?"d-dn":"d-nu";
+  return'<span class="'+c+'">'+(n>0?"+":"")+fmt(n)+'</span>';
 }
 function kb(v){
   if(v===null||v===undefined)return'<span class="kbadge nu">—</span>';
   var c=v>0?"up":v<0?"dn":"nu",a=v>0?"▲":v<0?"▼":"=";
   return'<span class="kbadge '+c+'">'+a+" "+Math.abs(v).toFixed(1)+"%</span>";
 }
-function diff(v){
-  if(v===null||v===undefined)return'<span class="d-nu">—</span>';
-  var c=v>0?"d-up":v<0?"d-dn":"d-nu";
-  return'<span class="'+c+'">'+(v>0?"+":"")+fmt(v)+"</span>";
-}
 function lbl(s){
   if(LABELS&&LABELS[s])return LABELS[s].replace("Thang","Tháng");
   return"Tháng "+parseInt(s.replace(/\D/g,""),10);
 }
 
+// ── LOAD ────────────────────────────────────────────────────
 function loadData(){
   document.getElementById("loading").style.display="flex";
   document.getElementById("app").style.display="none";
@@ -321,8 +262,8 @@ function loadData(){
       document.getElementById("app").style.display="block";
       if(d.error){showErr(d.error);return;}
       RAW=d.raw;SHEETS=d.sheets;LABELS=d.labels||{};
-      SEL_A=SHEETS[SHEETS.length-1];
-      SEL_B=SHEETS.length>=2?SHEETS[SHEETS.length-2]:"";
+      // Default: select last month only
+      SELECTED=[SHEETS[SHEETS.length-1]];
       buildTabs();renderView();
     })
     .catch(function(e){
@@ -334,77 +275,99 @@ function loadData(){
 }
 function showErr(m){var b=document.getElementById("errBox");b.innerHTML="⚠ "+m;b.style.display="block";}
 
+// ── TABS (multi-select) ──────────────────────────────────────
 function buildTabs(){
-  var cA=document.getElementById("sheetTabs"),cB=document.getElementById("sheetTabsB");
-  cA.innerHTML="";cB.innerHTML="";
+  var c=document.getElementById("sheetTabs");
+  c.innerHTML="";
   SHEETS.forEach(function(s){
-    var a=document.createElement("div");
-    a.className="stab"+(MODE==="single"&&s===SEL_A?" on":MODE==="compare"&&s===SEL_A?" cmp-a":"");
-    a.textContent=lbl(s);a.title=s;
-    a.onclick=(function(n){return function(){SEL_A=n;buildTabs();renderView();};})(s);
-    cA.appendChild(a);
-    if(MODE==="compare"){
-      var b=document.createElement("div");
-      b.className="stab"+(s===SEL_B?" cmp-b":"");
-      b.textContent=lbl(s);b.title=s;
-      b.onclick=(function(n){return function(){SEL_B=n;buildTabs();renderView();};})(s);
-      cB.appendChild(b);
-    }
+    var el=document.createElement("div");
+    el.className="stab"+(SELECTED.indexOf(s)>=0?" on":"");
+    el.textContent=lbl(s);el.title=s;
+    el.onclick=(function(n){return function(){toggleSheet(n);};})(s);
+    c.appendChild(el);
   });
-  document.getElementById("cmpArrow").style.display=MODE==="compare"?"inline":"none";
-  document.getElementById("sheetTabsB").style.display=MODE==="compare"?"flex":"none";
-  document.getElementById("tabsLabel").textContent=MODE==="single"?"Tháng":"Kỳ A";
-  document.getElementById("modeOne").className="mode-btn"+(MODE==="single"?" on":"");
-  document.getElementById("modeCmp").className="mode-btn"+(MODE==="compare"?" on":"");
 }
-function setMode(m){
-  MODE=m;
-  if(m==="compare"&&!SEL_B&&SHEETS.length>=2)SEL_B=SHEETS[SHEETS.length-2];
+function toggleSheet(s){
+  var idx=SELECTED.indexOf(s);
+  if(idx>=0){
+    if(SELECTED.length===1)return; // must keep at least 1
+    SELECTED.splice(idx,1);
+  } else {
+    SELECTED.push(s);
+    // keep order matching SHEETS order
+    SELECTED.sort(function(a,b){return SHEETS.indexOf(a)-SHEETS.indexOf(b);});
+  }
   buildTabs();renderView();
 }
 
-function processRows(curRows,prevRows){
-  var pm={};(prevRows||[]).forEach(function(r){pm[r.account]=r;});
+// ── COMPUTE DATA ─────────────────────────────────────────────
+/*
+  Logic:
+  - 1 tháng được chọn → xem tháng đó bình thường
+  - 2 tháng được chọn (A, B, A < B theo thứ tự) → NAV/AUM = tháng B - tháng A
+    fee vẫn cộng dồn (tháng B - tháng A có thể âm, nhưng fee thì accumulate)
+    Actually: fee cũng lấy B - A (chênh lệch)
+  - 3+ tháng → cộng dồn tất cả
+    Note: với 3+ tháng ta cộng giá trị tuyệt đối từng tháng
+*/
+function computeBrokers(){
+  var n=SELECTED.length;
+  if(n===0)return{brokers:[],summary:{totalNew:0,totalAccounts:0,cNAV:0,cAUM:0,cFee:0,isOneSel:true,isDelta:false}};
+
+  var isDelta=(n===2);
+  var isOneSel=(n===1);
+
+  // Build broker map
   var bm={};
-  curRows.forEach(function(row){
-    var bk=row.broker||"Không rõ";
-    if(!bm[bk])bm[bk]={broker:bk,newAcc:[],existAcc:[],
-      tNAV:0,tAUM:0,tFee:0,tTrading:0,pNAV:0,pAUM:0,pFee:0};
-    var b=bm[bk];
-    b.tNAV+=row.nav;b.tAUM+=row.aum;b.tFee+=row.fee;b.tTrading+=row.trading;
-    if(row.isNew===true){
-      b.newAcc.push({name:row.name,account:row.account,nav:row.nav,aum:row.aum,fee:row.fee,trading:row.trading});
-    } else {
-      var prev=pm[row.account];
-      if(prev){
-        b.pNAV+=prev.nav;b.pAUM+=prev.aum;b.pFee+=prev.fee;
-        b.existAcc.push({name:row.name,account:row.account,nav:row.nav,aum:row.aum,fee:row.fee,trading:row.trading,prevNav:prev.nav,prevAum:prev.aum,prevFee:prev.fee});
-      } else {
-        b.existAcc.push({name:row.name,account:row.account,nav:row.nav,aum:row.aum,fee:row.fee,trading:row.trading});
+
+  function addRows(rows,sign){
+    // sign=+1 or -1 (for delta: last month + 1, first month -1)
+    rows.forEach(function(row){
+      var bk=row.broker||"Không rõ";
+      if(!bm[bk])bm[bk]={broker:bk,newAcc:[],existAcc:[],
+        tNAV:0,tAUM:0,tFee:0,tTrading:0,newCount:0};
+      var b=bm[bk];
+      b.tNAV+=sign*row.nav;
+      b.tAUM+=sign*row.aum;
+      b.tFee+=sign*row.fee;
+      b.tTrading+=sign*row.trading;
+      if(sign>0){
+        if(row.isNew===true){
+          b.newCount++;
+          b.newAcc.push({name:row.name,account:row.account,nav:row.nav,aum:row.aum,fee:row.fee,trading:row.trading});
+        } else {
+          b.existAcc.push({name:row.name,account:row.account,nav:row.nav,aum:row.aum,fee:row.fee,trading:row.trading});
+        }
       }
-    }
-  });
-  var cN=0,cA=0,cF=0,cT=0,pN=0,pA=0,pF=0,nCnt=0;
+    });
+  }
+
+  if(isDelta){
+    // SELECTED[0] = earlier month (subtract), SELECTED[1] = later month (add)
+    addRows(RAW[SELECTED[0]]||[], -1);
+    addRows(RAW[SELECTED[1]]||[], +1);
+  } else {
+    // single or 3+: sum all selected
+    SELECTED.forEach(function(s){
+      addRows(RAW[s]||[], +1);
+    });
+  }
+
+  var cN=0,cA=0,cF=0,cT=0,nCnt=0,totAcc=0;
   var brokers=Object.keys(bm).map(function(k){
     var b=bm[k];
     cN+=b.tNAV;cA+=b.tAUM;cF+=b.tFee;cT+=b.tTrading;
-    pN+=b.pNAV;pA+=b.pAUM;pF+=b.pFee;nCnt+=b.newAcc.length;
+    nCnt+=b.newCount;
+    totAcc+=b.newAcc.length+b.existAcc.length;
     return{broker:b.broker,newAcc:b.newAcc,existAcc:b.existAcc,
-      newCount:b.newAcc.length,totalCount:b.newAcc.length+b.existAcc.length,
-      tNAV:b.tNAV,tAUM:b.tAUM,tFee:b.tFee,tTrading:b.tTrading,
-      pNAV:b.pNAV,pAUM:b.pAUM,pFee:b.pFee,
-      gNAV:b.pNAV>0?((b.tNAV-b.pNAV)/b.pNAV*100):null,
-      gAUM:b.pAUM>0?((b.tAUM-b.pAUM)/b.pAUM*100):null,
-      gFee:b.pFee>0?((b.tFee-b.pFee)/b.pFee*100):null};
+      newCount:b.newCount,totalCount:b.newAcc.length+b.existAcc.length,
+      tNAV:b.tNAV,tAUM:b.tAUM,tFee:b.tFee,tTrading:b.tTrading};
   });
-  return{brokers:brokers,summary:{
-    totalNew:nCnt,totalAccounts:curRows.length,
-    cNAV:cN,cAUM:cA,cFee:cF,cTrading:cT,
-    gNAV:pN>0?((cN-pN)/pN*100):null,
-    gAUM:pA>0?((cA-pA)/pA*100):null,
-    gFee:pF>0?((cF-pF)/pF*100):null}};
+  return{brokers:brokers,isDelta:isDelta,isOneSel:isOneSel,
+    summary:{totalNew:nCnt,totalAccounts:totAcc,cNAV:cN,cAUM:cA,cFee:cF}};
 }
 
+// ── SORT ─────────────────────────────────────────────────────
 function sortBrokers(list){
   return list.slice().sort(function(a,b){
     var va=a[SORT_COL]||0,vb=b[SORT_COL]||0;
@@ -414,74 +377,65 @@ function sortBrokers(list){
 }
 function setSort(col){
   if(SORT_COL===col)SORT_DIR*=-1;else{SORT_COL=col;SORT_DIR=-1;}
-  var hasPrev=MODE==="compare"&&!!SEL_B&&(RAW[SEL_B]||[]).length>0;
-  renderTable(BROKERS,hasPrev);
+  renderTable(BROKERS);
 }
 
+// ── RENDER VIEW ──────────────────────────────────────────────
 function renderView(){
-  var curRows=RAW[SEL_A]||[];
-  // Luôn lấy tháng liền trước để so sánh (kể cả mode single)
-  var prevSheet="";
-  if(MODE==="compare"&&SEL_B){
-    prevSheet=SEL_B;
-  } else {
-    // Tự động lấy sheet liền trước SEL_A
-    var idx=SHEETS.indexOf(SEL_A);
-    if(idx>0)prevSheet=SHEETS[idx-1];
-  }
-  var prevRows=prevSheet?RAW[prevSheet]||[]:[];
-  var hasPrev=prevRows.length>0;
+  var res=computeBrokers();
+  BROKERS=res.brokers;
+  var s=res.summary;
+  var isDelta=res.isDelta;
 
-  var result=processRows(curRows,prevRows);
-  BROKERS=result.brokers;
-  var s=result.summary;
-
-  // Mode label
-  var ml=document.getElementById("modeLabel"),mlb=document.getElementById("mlBadge");
-  ml.style.display="flex";
-  if(MODE==="compare"&&prevSheet){
-    mlb.className="ml compare";
-    mlb.innerHTML="So sánh: <b>"+lbl(prevSheet)+"</b> → <b>"+lbl(SEL_A)+"</b>";
-  } else if(hasPrev){
-    mlb.className="ml single";
-    mlb.innerHTML="Đang xem: <b>"+lbl(SEL_A)+"</b> · so với <b>"+lbl(prevSheet)+"</b>";
+  // Mode hint
+  var hint=document.getElementById("modeHint");
+  if(SELECTED.length===1){
+    hint.textContent="Đang xem: "+lbl(SELECTED[0]);
+  } else if(isDelta){
+    hint.textContent="Chênh lệch: "+lbl(SELECTED[1])+" − "+lbl(SELECTED[0])+" (NAV & AUM = tháng sau − tháng trước)";
   } else {
-    mlb.className="ml single";
-    mlb.innerHTML="Đang xem: <b>"+lbl(SEL_A)+"</b>";
+    hint.textContent="Cộng dồn: "+SELECTED.map(lbl).join(" + ");
   }
 
   // KPIs
   document.getElementById("sNew").textContent=s.totalNew;
-  document.getElementById("sTotal").textContent="Tổng TK hoạt động: "+s.totalAccounts;
+  document.getElementById("sTotal").textContent="Tổng TK: "+s.totalAccounts;
   document.getElementById("sNAV").textContent=fmt(s.cNAV)||"0";
   document.getElementById("sAUM").textContent=fmt(s.cAUM)||"0";
   document.getElementById("sFee").textContent=fmt(s.cFee)||"0";
-  document.getElementById("sNAVg").innerHTML=hasPrev?kb(s.gNAV):"";
-  document.getElementById("sAUMg").innerHTML=hasPrev?kb(s.gAUM):"";
-  document.getElementById("sFeeG").innerHTML=hasPrev?kb(s.gFee):"";
+  // Clear badges (no comparison in this mode)
+  document.getElementById("sNAVg").innerHTML="";
+  document.getElementById("sAUMg").innerHTML="";
+  document.getElementById("sFeeG").innerHTML="";
 
-  document.getElementById("footer").textContent=hasPrev
-    ?"SO SÁNH: "+lbl(prevSheet)+" → "+lbl(SEL_A)+" · "+curRows.length+" tài khoản · Thêm sheet DB mới tự cập nhật"
-    :"ĐANG XEM: "+lbl(SEL_A)+" · "+curRows.length+" tài khoản · Thêm sheet DB mới tự cập nhật";
+  // Footer
+  document.getElementById("footer").textContent=
+    SELECTED.length===1
+      ? "ĐANG XEM: "+lbl(SELECTED[0])+" · "+s.totalAccounts+" tài khoản"
+      : isDelta
+        ? "CHÊNH LỆCH: "+lbl(SELECTED[1])+" − "+lbl(SELECTED[0])+" · "+s.totalAccounts+" tài khoản"
+        : "CỘNG DỒN: "+SELECTED.map(lbl).join("+")+" · "+s.totalAccounts+" tài khoản";
 
   renderBarChart();
-  renderTable(BROKERS,hasPrev);
-  renderCharts(BROKERS,hasPrev,curRows,prevRows,SEL_A,prevSheet);
+  renderTable(BROKERS);
 }
 
+// ── BAR CHART ────────────────────────────────────────────────
 function renderBarChart(){
-  var top=BROKERS.slice().sort(function(a,b){return b.tAUM-a.tAUM;}).slice(0,10);
-  var mx=Math.max.apply(null,top.map(function(b){return b.tAUM;}));if(mx<=0)mx=1;
+  var top=BROKERS.slice().sort(function(a,b){return Math.abs(b.tAUM)-Math.abs(a.tAUM);}).slice(0,10);
+  var mx=Math.max.apply(null,top.map(function(b){return Math.abs(b.tAUM);}));if(mx<=0)mx=1;
   document.getElementById("barChart").innerHTML=top.map(function(b,i){
-    var p=(b.tAUM/mx*100).toFixed(1);
+    var p=(Math.abs(b.tAUM)/mx*100).toFixed(1);
     var nm=b.broker.replace(/^(FA |LM2 |LM )/g,"").split(" ").slice(0,3).join(" ");
     var cls=i===0?"c0":i===1?"c1":i===2?"c2":"cx";
+    var val=fmt(b.tAUM);
     return'<div class="bar-row"><div class="bar-name" title="'+b.broker+'">'+nm+'</div>'
       +'<div class="bar-track"><div class="bar-fill '+cls+'" style="width:'+p+'%">'
-      +'<span class="bar-val">'+(fmt(b.tAUM)||"0")+'</span></div></div></div>';
+      +'<span class="bar-val">'+(val||"0")+'</span></div></div></div>';
   }).join("");
 }
 
+// ── TABLE ────────────────────────────────────────────────────
 function th(col,label,cls){
   var arr=SORT_COL===col?(SORT_DIR<0?"▼":"▲"):"▼";
   var sc=SORT_COL===col?" sorted":"";
@@ -489,7 +443,7 @@ function th(col,label,cls){
     +label+'<span class="sort-arrow">'+arr+'</span></th>';
 }
 
-function renderTable(list,hasPrev){
+function renderTable(list){
   document.getElementById("tblHead").innerHTML='<tr>'
     +'<th style="width:38px">#</th>'
     +th("broker","AE")
@@ -499,9 +453,6 @@ function renderTable(list,hasPrev){
     +th("tFee","Trading Fee","nr")
     +th("tNAV","NAV","nr")
     +th("tAUM","AUM","nr")
-    +(hasPrev?th("gNAV","▲ NAV","nr"):'')
-    +(hasPrev?th("gAUM","▲ AUM","nr"):'')
-    +(hasPrev?th("gFee","▲ Fee","nr"):'')
     +'</tr>';
 
   var sorted=sortBrokers(list);
@@ -524,9 +475,6 @@ function renderTable(list,hasPrev){
       +'<td class="nr">'+fd(b.tFee)+'</td>'
       +'<td class="nr">'+fd(b.tNAV)+'</td>'
       +'<td class="nr">'+fd(b.tAUM)+'</td>'
-      +(hasPrev?'<td class="nr">'+pct(b.gNAV)+'</td>':'')
-      +(hasPrev?'<td class="nr">'+pct(b.gAUM)+'</td>':'')
-      +(hasPrev?'<td class="nr">'+pct(b.gFee)+'</td>':'')
       +'</tr>';
   });
 
@@ -538,97 +486,17 @@ function renderTable(list,hasPrev){
     +'<td class="nr" style="font-weight:700;color:var(--or)">'+fd(totF)+'</td>'
     +'<td class="nr" style="font-weight:700;color:var(--or)">'+fd(totN)+'</td>'
     +'<td class="nr" style="font-weight:700;color:var(--or)">'+fd(totA)+'</td>'
-    +(hasPrev?'<td></td><td></td><td></td>':"")
     +'</tr>';
 
   document.getElementById("tblBody").innerHTML=rows.join("")+totalRow;
 }
 
-// ── CHARTS (chỉ hiện khi có tháng trước) ──────────────────
-function dc(id){if(CI[id]){CI[id].destroy();delete CI[id];}}
-var GC={'rgba(249,115,22,0.85)':'or','rgba(59,130,246,0.75)':'bl'};
-var GRID_C='rgba(0,0,0,0.05)',TEXT_C='#999';
-function baseOpts(fmtFn){
-  return{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false},tooltip:{mode:"index",intersect:false,callbacks:{label:function(ctx){return ctx.dataset.label+": "+(fmtFn?fmtFn(ctx.raw):ctx.raw);}}}},
-    scales:{x:{grid:{color:GRID_C},ticks:{color:TEXT_C,font:{size:10},maxRotation:30}},
-      y:{grid:{color:GRID_C},ticks:{color:TEXT_C,font:{size:10},callback:function(v){return fmt(v)||"0";}}}}};
-}
-
-function renderCharts(brokers,hasPrev,curRows,prevRows,selA,selB){
-  var grid=document.getElementById("chartsGrid");
-  if(!hasPrev){grid.style.display="none";return;}
-  grid.style.display="grid";
-
-  // Build per-broker prev map
-  var pm={};
-  processRows(curRows,prevRows).brokers.forEach(function(b){pm[b.broker]=b;});
-
-  var top8=brokers.slice().sort(function(a,b){return b.tAUM-a.tAUM;}).slice(0,8);
-  var labs=top8.map(function(b){return b.broker.replace(/^(FA |LM2 |LM )/g,"").split(" ").slice(0,2).join(" ");});
-  var la=lbl(selA),lb2=lbl(selB);
-
-  // Chart 1: AUM
-  dc("cAUM");
-  document.getElementById("c1sub").textContent=lb2+" vs "+la;
-  document.getElementById("c1la").textContent=la;
-  document.getElementById("c1lb").textContent=lb2;
-  CI["cAUM"]=new Chart(document.getElementById("cAUM"),{type:"bar",
-    data:{labels:labs,datasets:[
-      {label:la,data:top8.map(function(b){return b.tAUM;}),backgroundColor:"rgba(249,115,22,0.85)",borderRadius:4,borderSkipped:false},
-      {label:lb2,data:top8.map(function(b){return b.pAUM;}),backgroundColor:"rgba(59,130,246,0.75)",borderRadius:4,borderSkipped:false}
-    ]},options:baseOpts(fmt)});
-
-  // Chart 2: NAV
-  dc("cNAV");
-  document.getElementById("c2sub").textContent=lb2+" vs "+la;
-  document.getElementById("c2la").textContent=la;
-  document.getElementById("c2lb").textContent=lb2;
-  CI["cNAV"]=new Chart(document.getElementById("cNAV"),{type:"bar",
-    data:{labels:labs,datasets:[
-      {label:la,data:top8.map(function(b){return b.tNAV;}),backgroundColor:"rgba(249,115,22,0.85)",borderRadius:4,borderSkipped:false},
-      {label:lb2,data:top8.map(function(b){return b.pNAV;}),backgroundColor:"rgba(59,130,246,0.75)",borderRadius:4,borderSkipped:false}
-    ]},options:baseOpts(fmt)});
-
-  // Chart 3: Fee
-  dc("cFee");
-  document.getElementById("c3sub").textContent=lb2+" vs "+la;
-  document.getElementById("c3la").textContent=la;
-  document.getElementById("c3lb").textContent=lb2;
-  CI["cFee"]=new Chart(document.getElementById("cFee"),{type:"bar",
-    data:{labels:labs,datasets:[
-      {label:la,data:top8.map(function(b){return b.tFee;}),backgroundColor:"rgba(249,115,22,0.85)",borderRadius:4,borderSkipped:false},
-      {label:lb2,data:top8.map(function(b){return b.pFee;}),backgroundColor:"rgba(59,130,246,0.75)",borderRadius:4,borderSkipped:false}
-    ]},options:baseOpts(fmt)});
-
-  // Chart 4: Donut TK mới vs hiện hữu
-  dc("cAcc");
-  var totNew=0,totExist=0;
-  brokers.forEach(function(b){totNew+=b.newCount;totExist+=b.existAcc.length;});
-  document.getElementById("c4sub").textContent=totNew+" TK mới · "+(totNew+totExist)+" tổng TK · "+la;
-  document.getElementById("c4leg").innerHTML=
-    '<div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>TK mới ('+totNew+')</div>'
-    +'<div class="legend-item"><div class="legend-dot" style="background:#e5e7eb"></div>TK hiện hữu ('+totExist+')</div>';
-  CI["cAcc"]=new Chart(document.getElementById("cAcc"),{type:"doughnut",
-    data:{labels:["TK mới","TK hiện hữu"],datasets:[{
-      data:[totNew,totExist],
-      backgroundColor:["#f97316","#e5e7eb"],
-      borderColor:["#fff","#fff"],borderWidth:3,hoverOffset:6}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:"65%",
-      plugins:{legend:{display:false},
-        tooltip:{callbacks:{label:function(ctx){
-          var tot=ctx.dataset.data.reduce(function(a,b){return a+b;},0);
-          return ctx.label+": "+ctx.parsed+" ("+Math.round(ctx.parsed/tot*100)+"%)";
-        }}}}}});
-}
-
-// ── MODAL ──────────────────────────────────────────────────
-function ctbl(acc,delta){
+// ── MODAL ────────────────────────────────────────────────────
+function ctbl(acc){
   if(!acc||!acc.length)return'<div class="empty-msg">Không có dữ liệu.</div>';
   return'<table class="mini"><thead><tr>'
     +'<th>Tên KH</th><th>Account</th>'
     +'<th class="nr">Trading</th><th class="nr">NAV</th><th class="nr">AUM</th><th class="nr">Fee</th>'
-    +(delta?'<th class="nr">Δ NAV</th><th class="nr">Δ AUM</th><th class="nr">Δ Fee</th>':'')
     +'</tr></thead><tbody>'
     +acc.map(function(r){
       return'<tr><td style="font-weight:500">'+r.name+'</td>'
@@ -637,20 +505,16 @@ function ctbl(acc,delta){
         +'<td class="nr">'+fd(r.nav)+'</td>'
         +'<td class="nr">'+fd(r.aum)+'</td>'
         +'<td class="nr">'+fd(r.fee)+'</td>'
-        +(delta?'<td class="nr">'+diff(r.prevNav!==undefined?r.nav-r.prevNav:null)+'</td>'
-          +'<td class="nr">'+diff(r.prevAum!==undefined?r.aum-r.prevAum:null)+'</td>'
-          +'<td class="nr">'+diff(r.prevFee!==undefined?r.fee-r.prevFee:null)+'</td>':'')
         +'</tr>';
     }).join("")+'</tbody></table>';
 }
 function openModal(idx){
   var b=BROKERS[idx];
-  var hasPrev=MODE==="compare"&&!!SEL_B||(SHEETS.indexOf(SEL_A)>0);
   document.getElementById("modalTitle").textContent=b.broker;
   document.getElementById("cnt1").textContent="("+b.newAcc.length+")";
   document.getElementById("cnt2").textContent="("+b.existAcc.length+")";
-  document.getElementById("pane1").innerHTML=ctbl(b.newAcc,false);
-  document.getElementById("pane2").innerHTML=ctbl(b.existAcc,hasPrev);
+  document.getElementById("pane1").innerHTML=ctbl(b.newAcc);
+  document.getElementById("pane2").innerHTML=ctbl(b.existAcc);
   document.getElementById("tab1").className="tab on";document.getElementById("tab2").className="tab";
   document.getElementById("pane1").className="pane on";document.getElementById("pane2").className="pane";
   document.getElementById("overlay").classList.add("open");
@@ -664,9 +528,11 @@ document.getElementById("tab2").onclick=function(){
   this.className="tab on";document.getElementById("tab1").className="tab";
   document.getElementById("pane2").className="pane on";document.getElementById("pane1").className="pane";};
 document.getElementById("searchBox").oninput=function(){
-  var q=this.value.toLowerCase(),hasPrev=MODE==="compare"&&!!SEL_B||(SHEETS.indexOf(SEL_A)>0);
-  renderTable(BROKERS.filter(function(b){return b.broker.toLowerCase().indexOf(q)>=0;}),hasPrev);};
+  var q=this.value.toLowerCase();
+  renderTable(BROKERS.filter(function(b){return b.broker.toLowerCase().indexOf(q)>=0;}));};
 
+// Fix API URL to match original
+document.addEventListener("DOMContentLoaded",function(){});
 loadData();
 </script>
 </body>
