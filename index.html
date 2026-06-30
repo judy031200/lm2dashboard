@@ -6,6 +6,7 @@
 <title>Broker Performance Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <style>
 :root{
   --or:#f97316;--or2:#ea6c0a;--or-bg:#fff7f0;--or-light:#fff3e8;
@@ -535,8 +536,24 @@ function makeHBar(id,data,labels,color,fmtFn){
       responsive:true,
       maintainAspectRatio:false,
       plugins:{
-        legend:{display:false},
-        tooltip:{callbacks:{label:function(ctx){
+        legend:{
+          display:false
+    },
+
+    datalabels:{
+        color:"#333",
+        anchor:"end",
+        align:"right",
+        offset:4,
+        font:{
+            weight:"600",
+            size:10
+        },
+        formatter:function(value){
+            return fmtFn(value);
+        }
+    },
+{callbacks:{label:function(ctx){
           return" "+(fmtFn?fmtFn(ctx.raw):ctx.raw);
         }}}
       },
@@ -549,7 +566,17 @@ function makeHBar(id,data,labels,color,fmtFn){
 }
 
 function renderCharts(){
-  var top10=BROKERS.slice().sort(function(a,b){return Math.abs(b.tAUM)-Math.abs(a.tAUM);}).slice(0,10);
+  const feeTop = BROKERS.slice()
+    .sort((a,b)=>b.tFee-a.tFee)
+    .slice(0,10);
+
+const navTop = BROKERS.slice()
+    .sort((a,b)=>b.tNAV-a.tNAV)
+    .slice(0,10);
+
+const aumTop = BROKERS.slice()
+    .sort((a,b)=>b.tAUM-a.tAUM)
+    .slice(0,10);
   var labs=top10.map(function(b){
     return b.broker.replace(/^(FA LM2 |FA LM |FA HCM |FA HQ2 |LM2 |LM |HCM )/,"").split(" ").slice(0,3).join(" ");
   });
@@ -559,9 +586,29 @@ function renderCharts(){
   document.getElementById("cNAVSubtitle").textContent="Top 10 · "+subtitle;
   document.getElementById("cAUMSubtitle").textContent="Top 10 · "+subtitle;
 
-  makeHBar("cFee",top10.map(function(b){return b.tFee;}),labs,"rgba(249,115,22,0.85)",fmtFee);
-  makeHBar("cNAV",top10.map(function(b){return b.tNAV;}),labs,"rgba(37,99,235,0.80)",fmtShort);
-  makeHBar("cAUM",top10.map(function(b){return b.tAUM;}),labs,"rgba(22,163,74,0.80)",fmtShort);
+  makeHBar(
+    "cFee",
+    feeTop.map(x=>x.tFee),
+    feeTop.map(x=>x.broker),
+    "rgba(249,115,22,0.85)",
+    fmtFee
+);
+
+makeHBar(
+    "cNAV",
+    navTop.map(x=>x.tNAV),
+    navTop.map(x=>x.broker),
+    "rgba(37,99,235,0.80)",
+    fmtShort
+);
+
+makeHBar(
+    "cAUM",
+    aumTop.map(x=>x.tAUM),
+    aumTop.map(x=>x.broker),
+    "rgba(22,163,74,0.80)",
+    fmtShort
+);
 }
 
 // ── TABLE ────────────────────────────────────────────────────
@@ -667,6 +714,7 @@ document.getElementById("searchBox").oninput=function(){
 
 // Fix API URL to match original
 document.addEventListener("DOMContentLoaded",function(){});
+Chart.register(ChartDataLabels);
 loadData();
 </script>
 </body>
