@@ -553,7 +553,7 @@ function makeHBar(id,data,labels,color,fmtFn){
             return fmtFn(value);
         }
     },
-{callbacks:{label:function(ctx){
+    tooltip:{callbacks:{label:function(ctx){
           return" "+(fmtFn?fmtFn(ctx.raw):ctx.raw);
         }}}
       },
@@ -577,10 +577,6 @@ const navTop = BROKERS.slice()
 const aumTop = BROKERS.slice()
     .sort((a,b)=>b.tAUM-a.tAUM)
     .slice(0,10);
-  var labs=top10.map(function(b){
-    return b.broker.replace(/^(FA LM2 |FA LM |FA HCM |FA HQ2 |LM2 |LM |HCM )/,"").split(" ").slice(0,3).join(" ");
-  });
-
   var subtitle=SELECTED.map(lbl).join(" + ");
   document.getElementById("cFeeSubtitle").textContent="Top 10 · "+subtitle;
   document.getElementById("cNAVSubtitle").textContent="Top 10 · "+subtitle;
